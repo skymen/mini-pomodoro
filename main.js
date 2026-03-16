@@ -149,10 +149,11 @@ function untuck() {
     targetX = 0;
   }
 
+  // Notify immediately so the arrow fades out during the slide
+  notifyTuckState(false);
   lerpAnimate(curX, curY, targetX, curY, 250, () => {
     tucked = false;
     tucking = false;
-    notifyTuckState(false);
   });
 }
 
