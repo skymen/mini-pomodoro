@@ -39,7 +39,7 @@
       }
 
       html.light {
-        --glass: rgba(255, 255, 255, 0.72);
+        --glass: rgba(255, 255, 255, 0.9);
         --glass-strong: rgba(255, 255, 255, 0.8);
         --glass-border: rgba(0, 0, 0, 0.08);
         --glass-hover: rgba(0, 0, 0, 0.04);
@@ -85,7 +85,7 @@
 
       /* ── Arrow strip ─────────────────────────────────────────────── */
       #arrow-strip {
-        /* width: 20px; */
+        width: 40px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -99,6 +99,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 0;
         opacity: 0;
         transition: opacity 0.25s ease;
         cursor: pointer;
@@ -112,10 +113,12 @@
       #root:not(.dock-left) #arrow-tab {
         border-radius: 8px 0 0 8px;
         border-right: none;
+        margin-left: 20px;
       }
       #root.dock-left #arrow-tab {
         border-radius: 0 8px 8px 0;
         border-left: none;
+        margin-right: 20px;
       }
 
       #arrow-tab .arrow-icon {
@@ -668,7 +671,7 @@
     <div id="root">
       <div id="panel">
         <div id="header">
-          <span class="title">Pomodoro</span>
+          <span class="title">Mini-pomodoro</span>
           <button class="header-btn" id="close-btn" title="Close">
             <svg
               width="10"
@@ -1256,8 +1259,6 @@
         } else {
           miniTimerEl.classList.remove("visible");
         }
-        // Tell main process so it uses the wider tuck offset
-        window.electronAPI.setArrowWidth(showMini);
       }
 
       function tick() {

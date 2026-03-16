@@ -7,7 +7,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   startDrag: () => ipcRenderer.send("start-drag"),
   closeWindow: () => ipcRenderer.send("close-window"),
   resizeHeight: (h) => ipcRenderer.send("resize-height", h),
-  setArrowWidth: (wide) => ipcRenderer.send("set-arrow-width", wide),
   getDockedSide: () => ipcRenderer.invoke("get-docked-side"),
   getMaxHeight: () => ipcRenderer.invoke("get-max-height"),
   onDockedSide: (cb) => ipcRenderer.on("docked-side", (_, side) => cb(side)),

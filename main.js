@@ -11,10 +11,8 @@ let win;
 let tucked = false;
 let tucking = false;
 let dockedSide = "right";
-const ARROW_TAB = 20;
-const ARROW_TAB_WIDE = 40;
+const ARROW_TAB = 40;
 const WIN_WIDTH = 290;
-let currentArrowTab = ARROW_TAB;
 const MIN_HEIGHT = 160;
 const MAX_HEIGHT = 560;
 const TUCK_DELAY = 800;
@@ -180,9 +178,9 @@ function tuck() {
 
   let targetX;
   if (dockedSide === "right") {
-    targetX = wa.x + wa.width - currentArrowTab;
+    targetX = wa.x + wa.width - ARROW_TAB;
   } else {
-    targetX = wa.x - WIN_WIDTH + currentArrowTab;
+    targetX = wa.x - WIN_WIDTH + ARROW_TAB;
   }
 
   notifyTuckState(true);
@@ -268,26 +266,6 @@ ipcMain.on("resize-height", (_, requestedHeight) => {
   const newY = y + Math.round((currentHeight - h) / 2);
   currentHeight = h;
   win.setBounds({ x, y: newY, width: WIN_WIDTH, height: h });
-});
-
-ipcMain.on("set-arrow-width", (_, wide) => {
-  currentArrowTab = wide ? ARROW_TAB_WIDE : ARROW_TAB;
-  if (tucked && win && !tucking) {
-    const wa = getWorkArea();
-    const [, curY] = win.getPosition();
-    let targetX;
-    if (dockedSide === "right") {
-      targetX = wa.x + wa.width - currentArrowTab;
-    } else {
-      targetX = wa.x - WIN_WIDTH + currentArrowTab;
-    }
-    win.setBounds({
-      x: targetX,
-      y: curY,
-      width: WIN_WIDTH,
-      height: currentHeight,
-    });
-  }
 });
 
 ipcMain.handle("get-docked-side", () => dockedSide);
