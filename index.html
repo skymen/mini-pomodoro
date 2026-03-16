@@ -88,9 +88,10 @@
         width: 40px;
         flex-shrink: 0;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         position: relative;
+        padding-top: 52px;
       }
 
       #arrow-tab {
@@ -134,7 +135,7 @@
       /* ── Mini timer (2X bigger: 40px wide) ──────────────────────── */
       #mini-timer {
         position: absolute;
-        top: 50%;
+        top: 72px;
         transform: translateY(-50%);
         width: 40px;
         display: flex;
@@ -611,15 +612,25 @@
         height: 1.5px;
         margin: auto 0;
         background: var(--accent);
-        animation: strike-sweep 0.3s ease forwards, strike-fade 0.3s ease 0.25s forwards;
+        animation:
+          strike-sweep 0.3s ease forwards,
+          strike-fade 0.3s ease 0.25s forwards;
       }
       @keyframes strike-sweep {
-        from { width: 0; }
-        to   { width: 100%; }
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
       }
       @keyframes strike-fade {
-        from { background: var(--accent); }
-        to   { background: var(--text-faint); }
+        from {
+          background: var(--accent);
+        }
+        to {
+          background: var(--text-faint);
+        }
       }
 
       .task-edit-input {
@@ -686,7 +697,9 @@
         padding: 1px 4px;
         border-radius: 3px;
         opacity: 0;
-        transition: opacity 0.15s, color 0.15s;
+        transition:
+          opacity 0.15s,
+          color 0.15s;
       }
       #done-section summary:hover #clear-done-btn {
         opacity: 1;
