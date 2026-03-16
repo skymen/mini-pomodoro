@@ -581,44 +581,26 @@
       .task-item.done .task-text {
         color: var(--text-faint);
         text-decoration: none;
-        background: linear-gradient(
-          transparent 45%,
-          var(--text-faint) 45%,
-          var(--text-faint) 55%,
-          transparent 55%
-        );
-        background-size: 100% 100%;
-        background-repeat: no-repeat;
-        animation: strikethrough 1.5s ease;
+        position: relative;
       }
-      @keyframes strikethrough {
-        0% {
-          background-size: 0% 100%;
-          background-image: linear-gradient(
-            transparent 45%,
-            var(--accent) 45%,
-            var(--accent) 55%,
-            transparent 55%
-          );
-        }
-        20% {
-          background-size: 100% 100%;
-          background-image: linear-gradient(
-            transparent 45%,
-            var(--accent) 45%,
-            var(--accent) 55%,
-            transparent 55%
-          );
-        }
-        100% {
-          background-size: 100% 100%;
-          background-image: linear-gradient(
-            transparent 45%,
-            var(--text-faint) 45%,
-            var(--text-faint) 55%,
-            transparent 55%
-          );
-        }
+      .task-item.done .task-text::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 1.5px;
+        margin: auto 0;
+        background: var(--accent);
+        animation: strike-sweep 0.3s ease forwards, strike-fade 0.3s ease 0.25s forwards;
+      }
+      @keyframes strike-sweep {
+        from { width: 0; }
+        to   { width: 100%; }
+      }
+      @keyframes strike-fade {
+        from { background: var(--accent); }
+        to   { background: var(--text-faint); }
       }
 
       .task-edit-input {
