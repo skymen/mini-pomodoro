@@ -505,8 +505,11 @@
       .task-item:hover {
         background: var(--glass-hover);
       }
-      .task-item.drag-over {
-        border-top: 2px solid var(--text-dim);
+      .task-item.drag-over-top {
+        border-top: 2px solid var(--accent);
+      }
+      .task-item.drag-over-bottom {
+        border-bottom: 2px solid var(--accent);
       }
       .task-item.dragging {
         opacity: 0.4;
@@ -1354,10 +1357,13 @@
             if (eDel && dDel && eDel.dataset.i !== dDel.dataset.i) {
               eDel.dataset.i = dDel.dataset.i;
             }
-            // Update text if changed
+            // Update text: if currently editing (input present), restore the span
             const eText = existing.querySelector(".task-text");
+            const eInput = existing.querySelector(".task-edit-input");
             const dText = desired.querySelector(".task-text");
-            if (eText && dText && eText.innerHTML !== dText.innerHTML) {
+            if (eInput && dText) {
+              eInput.replaceWith(dText.cloneNode(true));
+            } else if (eText && dText && eText.innerHTML !== dText.innerHTML) {
               eText.innerHTML = dText.innerHTML;
             }
             // Move to correct position if needed
@@ -1528,34 +1534,48 @@
         // Clear all drag-over indicators
         taskListEl
           .querySelectorAll(".task-item")
-          .forEach((el) => el.classList.remove("drag-over"));
-        if (item) item.classList.add("drag-over");
+          .forEach((el) => {
+            el.classList.remove("drag-over-top");
+            el.classList.remove("drag-over-bottom");
+          });
+        if (item) {
+          const rect = item.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (e.clientY < midY) {
+            item.classList.add("drag-over-top");
+          } else {
+            item.classList.add("drag-over-bottom");
+          }
+        }
       });
 
       taskListEl.addEventListener("dragleave", (e) => {
         const item = e.target.closest(".task-item");
-        if (item) item.classList.remove("drag-over");
+        if (item) {
+          item.classList.remove("drag-over-top");
+          item.classList.remove("drag-over-bottom");
+        }
       });
 
       taskListEl.addEventListener("drop", (e) => {
         e.preventDefault();
+        const droppedBelow = e.target.closest(".task-item.drag-over-bottom") !== null;
         taskListEl.querySelectorAll(".task-item").forEach((el) => {
-          el.classList.remove("drag-over");
+          el.classList.remove("drag-over-top");
+          el.classList.remove("drag-over-bottom");
           el.classList.remove("dragging");
         });
 
         const dropItem = e.target.closest(".task-item");
         if (!dropItem || dragSrcIdx === null) return;
-        const dropIdx = +dropItem.dataset.idx;
-        if (dragSrcIdx === dropIdx) return;
+        if (+dropItem.dataset.idx === dragSrcIdx) return;
 
-        // Move task in the array
+        // Remove the dragged task from the array
         const [moved] = tasks.splice(dragSrcIdx, 1);
-        // Find new insertion point (dropIdx may have shifted)
-        const newDropIdx = tasks.indexOf(
-          tasks.find((t) => tasks.indexOf(t) === dropIdx) || null,
-        );
-        const insertAt = newDropIdx !== -1 ? newDropIdx : tasks.length;
+        // Use the stable task id to find the drop target after splice
+        const dropTaskId = +dropItem.dataset.id;
+        const targetIdx = tasks.findIndex((t) => t.id === dropTaskId);
+        const insertAt = droppedBelow ? targetIdx + 1 : targetIdx;
         tasks.splice(insertAt, 0, moved);
 
         dragSrcIdx = null;
@@ -1566,7 +1586,8 @@
       taskListEl.addEventListener("dragend", () => {
         dragSrcIdx = null;
         taskListEl.querySelectorAll(".task-item").forEach((el) => {
-          el.classList.remove("drag-over");
+          el.classList.remove("drag-over-top");
+          el.classList.remove("drag-over-bottom");
           el.classList.remove("dragging");
         });
       });
