@@ -30,6 +30,7 @@
         --toggle-bg: rgba(255, 255, 255, 0.08);
         --toggle-bg-checked: rgba(255, 255, 255, 0.25);
         --done-check-dot: rgba(0, 0, 0, 0.4);
+        --accent: #ff2d2d;
         --blur: blur(40px) saturate(1.8);
         --radius: 14px;
         --radius-sm: 8px;
@@ -53,6 +54,7 @@
         --toggle-bg: rgba(0, 0, 0, 0.08);
         --toggle-bg-checked: rgba(0, 0, 0, 0.25);
         --done-check-dot: rgba(255, 255, 255, 0.5);
+        --accent: #ff3b3b;
       }
 
       html,
@@ -83,7 +85,7 @@
 
       /* ── Arrow strip ─────────────────────────────────────────────── */
       #arrow-strip {
-        width: 20px;
+        /* width: 20px; */
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -100,10 +102,8 @@
         opacity: 0;
         transition: opacity 0.25s ease;
         cursor: pointer;
-        background: var(--glass-strong);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border: 1px solid var(--glass-border);
+        background: var(--accent);
+        border: none;
       }
       #arrow-tab.visible {
         opacity: 1;
@@ -121,11 +121,11 @@
       #arrow-tab .arrow-icon {
         width: 10px;
         height: 10px;
-        color: var(--text-dim);
+        color: rgba(255, 255, 255, 0.9);
         transition: color 0.2s;
       }
       #arrow-tab:hover .arrow-icon {
-        color: var(--text);
+        color: #fff;
       }
 
       /* ── Mini timer (2X bigger: 40px wide) ──────────────────────── */
@@ -139,10 +139,8 @@
         align-items: center;
         pointer-events: none;
         z-index: 2;
-        background: var(--glass-strong);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border: 1px solid var(--glass-border);
+        background: var(--accent);
+        border: none;
         padding: 8px 0;
         gap: 3px;
         opacity: 0;
@@ -168,12 +166,12 @@
       }
       #mini-ring-bg {
         fill: none;
-        stroke: var(--text-faint);
+        stroke: rgba(255, 255, 255, 0.3);
         stroke-width: 2.5;
       }
       #mini-ring-progress {
         fill: none;
-        stroke: var(--text-dim);
+        stroke: #fff;
         stroke-width: 2.5;
         stroke-linecap: round;
       }
@@ -182,7 +180,7 @@
         font-size: 9px;
         font-weight: 600;
         letter-spacing: 0.3px;
-        color: var(--text-dim);
+        color: rgba(255, 255, 255, 0.9);
         font-variant-numeric: tabular-nums;
       }
 
@@ -228,7 +226,7 @@
         font-weight: 600;
         letter-spacing: 1.4px;
         text-transform: uppercase;
-        color: var(--text-dim);
+        color: var(--accent);
       }
 
       .header-btn {
@@ -284,7 +282,7 @@
         flex-shrink: 0;
       }
       .toggle:checked {
-        background: var(--toggle-bg-checked);
+        background: var(--accent);
       }
       .toggle::before {
         content: "";
@@ -301,7 +299,7 @@
       }
       .toggle:checked::before {
         transform: translateX(10px);
-        background: var(--text);
+        background: #fff;
       }
 
       /* ── Theme picker ────────────────────────────────────────────── */
@@ -378,7 +376,7 @@
       }
       #sm-ring-progress {
         fill: none;
-        stroke: var(--text);
+        stroke: var(--accent);
         stroke-width: 3;
         stroke-linecap: round;
         transition: stroke-dashoffset 0.5s ease;
@@ -582,15 +580,15 @@
       }
 
       .task-item.done .task-check {
-        background: var(--text-dim);
-        border-color: var(--text-dim);
+        background: var(--accent);
+        border-color: var(--accent);
       }
       .task-item.done .task-check::after {
         content: "";
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background: var(--done-check-dot);
+        background: rgba(255, 255, 255, 0.6);
       }
 
       .task-text {
@@ -995,7 +993,9 @@
             // Account for panel's own vertical padding/border/margin
             const style = getComputedStyle(panel);
             h += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-            h += parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+            h +=
+              parseFloat(style.borderTopWidth) +
+              parseFloat(style.borderBottomWidth);
             h += 12; // outer chrome (root margins, arrow strip, etc.)
             window.electronAPI.resizeHeight(h);
           });
