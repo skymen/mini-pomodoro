@@ -23,16 +23,15 @@ let tuckTimer = null;
 let currentHeight = MIN_HEIGHT;
 
 function createWindow() {
-  const { width: screenW, height: screenH } =
-    screen.getPrimaryDisplay().workAreaSize;
+  const wa = screen.getPrimaryDisplay().workArea;
 
   currentHeight = MIN_HEIGHT;
 
   win = new BrowserWindow({
     width: WIN_WIDTH,
     height: currentHeight,
-    x: screenW - WIN_WIDTH,
-    y: Math.round((screenH - currentHeight) / 2),
+    x: wa.x + wa.width - WIN_WIDTH,
+    y: wa.y + Math.round((wa.height - currentHeight) / 2),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -74,7 +73,7 @@ function createWindow() {
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function getWorkArea() {
-  return screen.getPrimaryDisplay().workAreaSize;
+  return screen.getPrimaryDisplay().workArea;
 }
 
 function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
@@ -88,11 +87,11 @@ function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
     const ease = 1 - Math.pow(1 - t, 4);
     const x = Math.round(fromX + (toX - fromX) * ease);
     const y = Math.round(fromY + (toY - fromY) * ease);
-    if (win) win.setPosition(x, y, false);
+    if (win) win.setBounds({ x, y, width: WIN_WIDTH, height: currentHeight });
 
     if (step >= steps) {
       clearInterval(interval);
-      if (win) win.setPosition(toX, toY, false);
+      if (win) win.setBounds({ x: toX, y: toY, width: WIN_WIDTH, height: currentHeight });
       if (done) done();
     }
   }, 1000 / fps);
@@ -100,14 +99,14 @@ function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
 
 function snapToEdge() {
   if (!win) return;
-  const { width: screenW } = getWorkArea();
+  const wa = getWorkArea();
   const [curX, curY] = win.getPosition();
 
   let targetX;
   if (dockedSide === "right") {
-    targetX = screenW - WIN_WIDTH;
+    targetX = wa.x + wa.width - WIN_WIDTH;
   } else {
-    targetX = 0;
+    targetX = wa.x;
   }
   notifyDockedSide();
 
@@ -119,14 +118,14 @@ function snapToEdge() {
 function tuck() {
   if (!win || tucked || tucking) return;
   tucking = true;
-  const { width: screenW } = getWorkArea();
+  const wa = getWorkArea();
   const [curX, curY] = win.getPosition();
 
   let targetX;
   if (dockedSide === "right") {
-    targetX = screenW - currentArrowTab;
+    targetX = wa.x + wa.width - currentArrowTab;
   } else {
-    targetX = -(WIN_WIDTH - currentArrowTab);
+    targetX = wa.x - WIN_WIDTH + currentArrowTab;
   }
 
   notifyTuckState(true);
@@ -139,14 +138,14 @@ function tuck() {
 function untuck() {
   if (!win || !tucked || tucking) return;
   tucking = true;
-  const { width: screenW } = getWorkArea();
+  const wa = getWorkArea();
   const [curX, curY] = win.getPosition();
 
   let targetX;
   if (dockedSide === "right") {
-    targetX = screenW - WIN_WIDTH;
+    targetX = wa.x + wa.width - WIN_WIDTH;
   } else {
-    targetX = 0;
+    targetX = wa.x;
   }
 
   // Notify immediately so the arrow fades out during the slide
@@ -183,9 +182,9 @@ ipcMain.on("mouse-leave", () => {
 });
 
 ipcMain.on("drag-end", (_, { x, y }) => {
-  const { width: screenW } = getWorkArea();
+  const wa = getWorkArea();
   const center = x + WIN_WIDTH / 2;
-  dockedSide = center > screenW / 2 ? "right" : "left";
+  dockedSide = center > wa.x + wa.width / 2 ? "right" : "left";
   snapToEdge();
 });
 
@@ -217,15 +216,15 @@ ipcMain.on("resize-height", (_, requestedHeight) => {
 ipcMain.on("set-arrow-width", (_, wide) => {
   currentArrowTab = wide ? ARROW_TAB_WIDE : ARROW_TAB;
   if (tucked && win && !tucking) {
-    const { width: screenW } = getWorkArea();
+    const wa = getWorkArea();
     const [, curY] = win.getPosition();
     let targetX;
     if (dockedSide === "right") {
-      targetX = screenW - currentArrowTab;
+      targetX = wa.x + wa.width - currentArrowTab;
     } else {
-      targetX = -(WIN_WIDTH - currentArrowTab);
+      targetX = wa.x - WIN_WIDTH + currentArrowTab;
     }
-    win.setPosition(targetX, curY, false);
+    win.setBounds({ x: targetX, y: curY, width: WIN_WIDTH, height: currentHeight });
   }
 });
 
