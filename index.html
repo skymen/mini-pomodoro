@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Pomodoro</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --glass: rgba(12, 12, 14, 0.52);
+        --glass-strong: rgba(12, 12, 14, 0.62);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-hover: rgba(255, 255, 255, 0.06);
+        --text: rgba(255, 255, 255, 0.85);
+        --text-dim: rgba(255, 255, 255, 0.4);
+        --text-faint: rgba(255, 255, 255, 0.2);
+        --blur: blur(40px) saturate(1.8);
+        --radius: 14px;
+        --radius-sm: 8px;
+        --font:
+          -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: transparent !important;
+        font-family: var(--font);
+        color: var(--text);
+        user-select: none;
+        font-size: 13px;
+      }
+
+      /*
+   * Layout: flex row.
+   * Docked RIGHT (default) => [panel] [arrow]  (arrow on far right)
+   * Docked LEFT            => [arrow] [panel]  (arrow on far left)
+   *
+   * When tucked right, rightmost 20px stay on screen = arrow strip. Correct.
+   * When tucked left, leftmost 20px stay on screen = arrow strip. Correct.
+   */
+      #root {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: row;
+      }
+      #root:not(.dock-left) {
+        flex-direction: row-reverse;
+      }
+
+      /* ── Arrow strip ─────────────────────────────────────────────── */
+      #arrow-strip {
+        width: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      #arrow-tab {
+        width: 20px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+        background: var(--glass-strong);
+        backdrop-filter: var(--blur);
+        -webkit-backdrop-filter: var(--blur);
+        border: 1px solid var(--glass-border);
+      }
+      #arrow-tab.visible {
+        opacity: 1;
+      }
+
+      /*
+   * Rounding: the edge touching the panel side gets rounded,
+   * the edge flush with the screen gets no radius.
+   * dock-right: arrow is rightmost => round left corners, flat right
+   * dock-left:  arrow is leftmost  => round right corners, flat left
+   */
+      #root:not(.dock-left) #arrow-tab {
+        border-radius: 8px 0 0 8px;
+        border-right: none;
+      }
+      #root.dock-left #arrow-tab {
+        border-radius: 0 8px 8px 0;
+        border-left: none;
+      }
+
+      #arrow-tab .arrow-icon {
+        width: 10px;
+        height: 10px;
+        color: var(--text-dim);
+        transition: color 0.2s;
+      }
+      #arrow-tab:hover .arrow-icon {
+        color: var(--text);
+      }
+
+      /* ── Mini timer ──────────────────────────────────────────────── */
+      #mini-timer {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+        z-index: 2;
+        background: var(--glass-strong);
+        backdrop-filter: var(--blur);
+        -webkit-backdrop-filter: var(--blur);
+        border: 1px solid var(--glass-border);
+        padding: 5px 0;
+        gap: 2px;
+      }
+      #mini-timer.visible {
+        display: flex;
+      }
+
+      #root:not(.dock-left) #mini-timer {
+        border-radius: 8px 0 0 8px;
+        border-right: none;
+      }
+      #root.dock-left #mini-timer {
+        border-radius: 0 8px 8px 0;
+        border-left: none;
+      }
+
+      #mini-timer-ring {
+        width: 14px;
+        height: 14px;
+        transform: rotate(-90deg);
+      }
+      #mini-ring-bg {
+        fill: none;
+        stroke: var(--text-faint);
+        stroke-width: 3;
+      }
+      #mini-ring-progress {
+        fill: none;
+        stroke: var(--text-dim);
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+
+      #mini-timer-text {
+        font-size: 7px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        color: var(--text-dim);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ── Main panel ──────────────────────────────────────────────── */
+      #panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin: 6px 0;
+        background: var(--glass);
+        backdrop-filter: var(--blur);
+        -webkit-backdrop-filter: var(--blur);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      /* ── Header ──────────────────────────────────────────────────── */
+      #header {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px 6px;
+        cursor: grab;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      #header:active {
+        cursor: grabbing;
+      }
+
+      #header .title {
+        flex: 1;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      .header-btn {
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .header-btn:hover {
+        background: var(--glass-hover);
+        color: var(--text);
+      }
+
+      /* ── Divider ─────────────────────────────────────────────────── */
+      .divider {
+        height: 1px;
+        background: var(--glass-border);
+        margin: 0 12px;
+        flex-shrink: 0;
+      }
+
+      /* ── Timer section (always visible) ──────────────────────────── */
+      #timer-section {
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+
+      #timer-top-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+
+      #timer-ring-small {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+      }
+
+      #timer-ring-small svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+      #sm-ring-bg {
+        fill: none;
+        stroke: var(--text-faint);
+        stroke-width: 3;
+      }
+      #sm-ring-progress {
+        fill: none;
+        stroke: var(--text);
+        stroke-width: 3;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.5s ease;
+      }
+
+      #timer-ring-small .timer-time {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+      }
+
+      #timer-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      #timer-phase {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      #timer-session-info {
+        font-size: 9px;
+        color: var(--text-dim);
+      }
+
+      #timer-controls {
+        display: flex;
+        gap: 3px;
+        flex-shrink: 0;
+      }
+
+      .t-btn {
+        width: 26px;
+        height: 26px;
+        border: none;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-dim);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .t-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+
+      /* ── Task section ─────────────────────────────────────────────── */
+      #task-section {
+        display: flex;
+        flex-direction: column;
+        padding: 8px 12px;
+        gap: 6px;
+        /* No flex:1 -- grows naturally with content */
+      }
+
+      #task-input-row {
+        display: flex;
+        gap: 5px;
+      }
+
+      #task-input {
+        flex: 1;
+        padding: 6px 9px;
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        font-size: 11px;
+        font-family: var(--font);
+        outline: none;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      #task-input:focus {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      #task-input::placeholder {
+        color: var(--text-faint);
+      }
+
+      #add-btn {
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-dim);
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      #add-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+
+      #task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow-y: auto;
+      }
+
+      #task-list::-webkit-scrollbar {
+        width: 3px;
+      }
+      #task-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+      #task-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .task-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 6px;
+        border-radius: 6px;
+        transition: background 0.12s;
+        animation: fadeIn 0.15s ease;
+        flex-shrink: 0;
+      }
+      .task-item:hover {
+        background: var(--glass-hover);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-3px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .task-check {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1.5px solid var(--text-dim);
+        background: transparent;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .task-check:hover {
+        border-color: var(--text);
+      }
+
+      .task-item.done .task-check {
+        background: var(--text-dim);
+        border-color: var(--text-dim);
+      }
+      .task-item.done .task-check::after {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.4);
+      }
+
+      .task-text {
+        flex: 1;
+        font-size: 11px;
+        line-height: 1.3;
+        color: var(--text);
+      }
+      .task-item.done .task-text {
+        text-decoration: line-through;
+        color: var(--text-faint);
+      }
+
+      .task-del {
+        background: none;
+        border: none;
+        color: var(--text-faint);
+        font-size: 13px;
+        cursor: pointer;
+        padding: 0 2px;
+        opacity: 0;
+        transition:
+          opacity 0.12s,
+          color 0.12s;
+        line-height: 1;
+      }
+      .task-item:hover .task-del {
+        opacity: 1;
+      }
+      .task-del:hover {
+        color: var(--text);
+      }
+
+      /* ── Settings row ─────────────────────────────────────────────── */
+      #settings-row {
+        padding: 4px 12px 8px;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      #settings-row label {
+        font-size: 9px;
+        color: var(--text-faint);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .toggle {
+        position: relative;
+        width: 22px;
+        height: 12px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        outline: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+      .toggle:checked {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .toggle::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        transition:
+          transform 0.2s,
+          background 0.2s;
+      }
+      .toggle:checked::before {
+        transform: translateX(10px);
+        background: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="panel">
+        <div id="header">
+          <span class="title">Pomodoro</span>
+          <button class="header-btn" id="close-btn" title="Close">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div id="timer-section">
+          <div id="timer-top-row">
+            <div id="timer-ring-small">
+              <svg viewBox="0 0 48 48">
+                <circle id="sm-ring-bg" cx="24" cy="24" r="20" />
+                <circle
+                  id="sm-ring-progress"
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke-dasharray="125.66"
+                  stroke-dashoffset="0"
+                />
+              </svg>
+              <div class="timer-time" id="timer-display">25:00</div>
+            </div>
+            <div id="timer-info">
+              <span id="timer-phase">Focus</span>
+              <span id="timer-session-info">Session 1 / 4</span>
+            </div>
+            <div id="timer-controls">
+              <button class="t-btn" id="btn-play" title="Play/Pause">
+                <svg
+                  id="icon-play"
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <svg
+                  id="icon-pause"
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="display: none"
+                >
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+              </button>
+              <button class="t-btn" id="btn-reset" title="Reset">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+              </button>
+              <button class="t-btn" id="btn-skip" title="Skip">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <polygon points="5 4 15 12 5 20 5 4" />
+                  <line
+                    x1="19"
+                    y1="5"
+                    x2="19"
+                    y2="19"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div id="task-section">
+          <div id="task-input-row">
+            <input
+              id="task-input"
+              type="text"
+              placeholder="Add a task..."
+              autocomplete="off"
+            />
+            <button id="add-btn">+</button>
+          </div>
+          <div id="task-list"></div>
+        </div>
+
+        <div id="settings-row">
+          <label>
+            <input type="checkbox" class="toggle" id="keep-timer-toggle" />
+            <span>Show timer when collapsed</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="arrow-strip">
+        <div id="arrow-tab">
+          <svg
+            class="arrow-icon"
+            id="arrow-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </div>
+        <div id="mini-timer">
+          <svg id="mini-timer-ring" viewBox="0 0 24 24">
+            <circle id="mini-ring-bg" cx="12" cy="12" r="9" />
+            <circle
+              id="mini-ring-progress"
+              cx="12"
+              cy="12"
+              r="9"
+              stroke-dasharray="56.55"
+              stroke-dashoffset="0"
+            />
+          </svg>
+          <span id="mini-timer-text">25:00</span>
+        </div>
+      </div>
+    </div>
+
+    <audio id="snd-add" src="assets/task-add.aac" preload="auto"></audio>
+    <audio
+      id="snd-checked"
+      src="assets/task-checked.aac"
+      preload="auto"
+    ></audio>
+    <audio
+      id="snd-unchecked"
+      src="assets/task-unchecked.aac"
+      preload="auto"
+    ></audio>
+    <audio id="snd-timer-end" src="assets/timer-end.aac" preload="auto"></audio>
+
+    <script>
+      // ── Sounds ──────────────────────────────────────────────────────
+      const sndAdd = document.getElementById("snd-add");
+      const sndChecked = document.getElementById("snd-checked");
+      const sndUnchecked = document.getElementById("snd-unchecked");
+      const sndTimerEnd = document.getElementById("snd-timer-end");
+
+      function playSound(audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+
+      // ── Side tracking ──────────────────────────────────────────────
+      let dockedSide = "right";
+      const rootEl = document.getElementById("root");
+      const arrowTab = document.getElementById("arrow-tab");
+      const arrowIcon = document.getElementById("arrow-icon");
+      const miniTimerEl = document.getElementById("mini-timer");
+
+      function updateSideClasses(side) {
+        dockedSide = side;
+        if (side === "left") {
+          rootEl.classList.add("dock-left");
+        } else {
+          rootEl.classList.remove("dock-left");
+        }
+
+        // Arrow points inward (toward the panel / screen center)
+        // Docked right => arrow strip is on right => arrow should point LEFT (toward center)
+        // Docked left  => arrow strip is on left  => arrow should point RIGHT (toward center)
+        if (side === "right") {
+          arrowIcon.innerHTML = '<polyline points="15 18 9 12 15 6" />';
+        } else {
+          arrowIcon.innerHTML = '<polyline points="9 18 15 12 9 6" />';
+        }
+      }
+
+      window.electronAPI.getDockedSide().then(updateSideClasses);
+      window.electronAPI.onDockedSide(updateSideClasses);
+
+      // ── Tuck state ─────────────────────────────────────────────────
+      let isTucked = false;
+
+      window.electronAPI.onTuckState((tucked) => {
+        isTucked = tucked;
+        if (tucked) {
+          arrowTab.classList.add("visible");
+          updateMiniTimerVisibility();
+        } else {
+          arrowTab.classList.remove("visible");
+          miniTimerEl.classList.remove("visible");
+        }
+      });
+
+      // ── Drag handling ──────────────────────────────────────────────
+      const header = document.getElementById("header");
+      let dragging = false;
+      let dragOffsetX = 0,
+        dragOffsetY = 0;
+
+      header.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".header-btn")) return;
+        dragging = true;
+        dragOffsetX = e.screenX - window.screenX;
+        dragOffsetY = e.screenY - window.screenY;
+        window.electronAPI.startDrag();
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        window.moveTo(e.screenX - dragOffsetX, e.screenY - dragOffsetY);
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (!dragging) return;
+        dragging = false;
+        window.electronAPI.dragEnd({ x: window.screenX, y: window.screenY });
+      });
+
+      // ── Mouse enter / leave ────────────────────────────────────────
+      rootEl.addEventListener("mouseenter", () => {
+        window.electronAPI.mouseEnter();
+      });
+
+      rootEl.addEventListener("mouseleave", () => {
+        if (!dragging) window.electronAPI.mouseLeave();
+      });
+
+      // ── Close ──────────────────────────────────────────────────────
+      document.getElementById("close-btn").addEventListener("click", () => {
+        window.electronAPI.closeWindow();
+      });
+
+      // ── Dynamic height ─────────────────────────────────────────────
+      function requestResize() {
+        // Measure the natural height the panel wants
+        const panel = document.getElementById("panel");
+        const desired = panel.scrollHeight + 12; // 6px margin top + 6px bottom
+        window.electronAPI.resizeHeight(desired);
+      }
+
+      // ── Tasks ──────────────────────────────────────────────────────
+      const taskInput = document.getElementById("task-input");
+      const addBtn = document.getElementById("add-btn");
+      const taskListEl = document.getElementById("task-list");
+      let tasks = JSON.parse(localStorage.getItem("pomo-tasks") || "[]");
+
+      function saveTasks() {
+        localStorage.setItem("pomo-tasks", JSON.stringify(tasks));
+      }
+
+      function renderTasks() {
+        taskListEl.innerHTML = "";
+
+        const incomplete = tasks.filter((t) => !t.done);
+        const complete = tasks.filter((t) => t.done);
+        const ordered = [...incomplete, ...complete];
+
+        ordered.forEach((t) => {
+          const origIdx = tasks.indexOf(t);
+          const el = document.createElement("div");
+          el.className = "task-item" + (t.done ? " done" : "");
+          el.innerHTML = `
+        <div class="task-check" data-i="${origIdx}"></div>
+        <span class="task-text">${escapeHtml(t.text)}</span>
+        <button class="task-del" data-i="${origIdx}">&times;</button>
+      `;
+          taskListEl.appendChild(el);
+        });
+
+        // After rendering, request a window resize
+        requestAnimationFrame(requestResize);
+      }
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function addTask() {
+        const text = taskInput.value.trim();
+        if (!text) return;
+        tasks.push({ text, done: false });
+        saveTasks();
+        renderTasks();
+        taskInput.value = "";
+        taskInput.focus();
+        playSound(sndAdd);
+      }
+
+      addBtn.addEventListener("click", addTask);
+      taskInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addTask();
+      });
+
+      taskListEl.addEventListener("click", (e) => {
+        const check = e.target.closest(".task-check");
+        const del = e.target.closest(".task-del");
+        if (check) {
+          const i = +check.dataset.i;
+          tasks[i].done = !tasks[i].done;
+          playSound(tasks[i].done ? sndChecked : sndUnchecked);
+          saveTasks();
+          renderTasks();
+        } else if (del) {
+          const i = +del.dataset.i;
+          tasks.splice(i, 1);
+          saveTasks();
+          renderTasks();
+        }
+      });
+
+      renderTasks();
+
+      // ── Pomodoro Timer ─────────────────────────────────────────────
+      const FOCUS_MINS = 25;
+      const SHORT_BREAK = 5;
+      const LONG_BREAK = 15;
+      const SESSIONS = 4;
+
+      let session = 1;
+      let isBreak = false;
+      let totalSeconds = FOCUS_MINS * 60;
+      let remaining = totalSeconds;
+      let running = false;
+      let interval = null;
+
+      const timerDisplay = document.getElementById("timer-display");
+      const timerPhase = document.getElementById("timer-phase");
+      const timerSessionInfo = document.getElementById("timer-session-info");
+      const smRingProgress = document.getElementById("sm-ring-progress");
+      const btnPlay = document.getElementById("btn-play");
+      const iconPlay = document.getElementById("icon-play");
+      const iconPause = document.getElementById("icon-pause");
+      const btnReset = document.getElementById("btn-reset");
+      const btnSkip = document.getElementById("btn-skip");
+
+      const SM_CIRCUMFERENCE = 2 * Math.PI * 20;
+      const MINI_CIRCUMFERENCE = 2 * Math.PI * 9;
+
+      const miniRingProgress = document.getElementById("mini-ring-progress");
+      const miniTimerText = document.getElementById("mini-timer-text");
+      const keepTimerToggle = document.getElementById("keep-timer-toggle");
+
+      keepTimerToggle.checked =
+        localStorage.getItem("pomo-keep-timer") === "true";
+      keepTimerToggle.addEventListener("change", () => {
+        localStorage.setItem("pomo-keep-timer", keepTimerToggle.checked);
+        updateMiniTimerVisibility();
+      });
+
+      function fmt(s) {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+      }
+
+      function updateTimerUI() {
+        timerDisplay.textContent = fmt(remaining);
+        const progress = 1 - remaining / totalSeconds;
+
+        smRingProgress.setAttribute(
+          "stroke-dashoffset",
+          (SM_CIRCUMFERENCE * (1 - progress)).toFixed(2),
+        );
+
+        timerPhase.textContent = isBreak ? "Break" : "Focus";
+        timerSessionInfo.textContent = `Session ${session} / ${SESSIONS}`;
+
+        miniTimerText.textContent = fmt(remaining);
+        miniRingProgress.setAttribute(
+          "stroke-dashoffset",
+          (MINI_CIRCUMFERENCE * (1 - progress)).toFixed(2),
+        );
+      }
+
+      function updateMiniTimerVisibility() {
+        if (isTucked && running && keepTimerToggle.checked) {
+          miniTimerEl.classList.add("visible");
+          arrowTab.classList.remove("visible");
+        } else if (isTucked) {
+          miniTimerEl.classList.remove("visible");
+          arrowTab.classList.add("visible");
+        } else {
+          miniTimerEl.classList.remove("visible");
+        }
+      }
+
+      function tick() {
+        if (remaining <= 0) {
+          clearInterval(interval);
+          running = false;
+          iconPlay.style.display = "";
+          iconPause.style.display = "none";
+          playSound(sndTimerEnd);
+          onPhaseEnd();
+          updateMiniTimerVisibility();
+          return;
+        }
+        remaining--;
+        updateTimerUI();
+      }
+
+      function onPhaseEnd() {
+        if (!isBreak) {
+          const idx = tasks.findIndex((t) => !t.done);
+          if (idx !== -1) {
+            tasks[idx].done = true;
+            saveTasks();
+            renderTasks();
+          }
+          isBreak = true;
+          totalSeconds =
+            (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
+        } else {
+          isBreak = false;
+          session++;
+          totalSeconds = FOCUS_MINS * 60;
+        }
+        remaining = totalSeconds;
+        updateTimerUI();
+        startTimer();
+      }
+
+      function startTimer() {
+        if (running) return;
+        running = true;
+        iconPlay.style.display = "none";
+        iconPause.style.display = "";
+        interval = setInterval(tick, 1000);
+        updateMiniTimerVisibility();
+      }
+
+      function pauseTimer() {
+        running = false;
+        clearInterval(interval);
+        iconPlay.style.display = "";
+        iconPause.style.display = "none";
+        updateMiniTimerVisibility();
+      }
+
+      btnPlay.addEventListener("click", () =>
+        running ? pauseTimer() : startTimer(),
+      );
+      btnReset.addEventListener("click", () => {
+        pauseTimer();
+        remaining = totalSeconds;
+        updateTimerUI();
+      });
+      btnSkip.addEventListener("click", () => {
+        pauseTimer();
+        remaining = 0;
+        onPhaseEnd();
+      });
+
+      updateTimerUI();
+
+      // Initial resize
+      requestAnimationFrame(requestResize);
+    </script>
+  </body>
+</html>
