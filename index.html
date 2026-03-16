@@ -416,6 +416,11 @@
         background: var(--btn-bg-hover);
         color: var(--text);
       }
+      #btn-play:hover,
+      #btn-play.playing {
+        background: var(--accent);
+        color: #fff;
+      }
 
       /* ── Task section ─────────────────────────────────────────────── */
       #task-section {
@@ -501,18 +506,30 @@
         transition: background 0.12s;
         animation: fadeIn 0.15s ease;
         flex-shrink: 0;
+        position: relative;
       }
       .task-item:hover {
         background: var(--glass-hover);
       }
-      .task-item.drag-over-top {
-        box-shadow: 0 -1px 0 0 var(--accent);
+      .task-item.drag-over-top::before,
+      .task-item.drag-over-bottom::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        pointer-events: none;
+        z-index: 1;
       }
-      .task-item.drag-over-bottom {
-        box-shadow: 0 1px 0 0 var(--accent);
+      .task-item.drag-over-top::before {
+        top: -1px;
+      }
+      .task-item.drag-over-bottom::after {
+        bottom: -1px;
       }
       .task-item.dragging {
-        opacity: 0.4;
+        opacity: 0;
       }
 
       @keyframes fadeIn {
@@ -1515,6 +1532,38 @@
       taskListEl.addEventListener("dblclick", handleTaskDblClick);
       doneListEl.addEventListener("dblclick", handleTaskDblClick);
 
+      // ── FLIP animation helper ─────────────────────────────────────
+      function flipAnimate(container, duration = 200) {
+        // "First" – snapshot current positions keyed by data-id
+        const firstRects = new Map();
+        for (const child of container.children) {
+          firstRects.set(child.dataset.id, child.getBoundingClientRect());
+        }
+
+        return function play() {
+          for (const child of container.children) {
+            const id = child.dataset.id;
+            const first = firstRects.get(id);
+            const last = child.getBoundingClientRect();
+            if (!first) continue; // newly inserted element, skip
+            const dy = first.top - last.top;
+            if (Math.abs(dy) < 1) continue; // didn't move
+            child.style.transition = "none";
+            child.style.transform = `translateY(${dy}px)`;
+            // Force reflow so the transform is applied before we animate
+            child.offsetHeight; // eslint-disable-line no-unused-expressions
+            child.style.transition = `transform ${duration}ms ease`;
+            child.style.transform = "";
+            // Clean up after animation
+            const onEnd = () => {
+              child.style.transition = "";
+              child.removeEventListener("transitionend", onEnd);
+            };
+            child.addEventListener("transitionend", onEnd);
+          }
+        };
+      }
+
       // ── Drag-and-drop reorder (incomplete tasks only) ──────────────
       let dragSrcIdx = null;
 
@@ -1522,9 +1571,10 @@
         const item = e.target.closest(".task-item");
         if (!item) return;
         dragSrcIdx = +item.dataset.idx;
-        item.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", dragSrcIdx);
+        // Delay hiding so the browser captures the ghost image first
+        requestAnimationFrame(() => item.classList.add("dragging"));
       });
 
       taskListEl.addEventListener("dragover", (e) => {
@@ -1570,6 +1620,9 @@
         if (!dropItem || dragSrcIdx === null) return;
         if (+dropItem.dataset.idx === dragSrcIdx) return;
 
+        // Snapshot positions before DOM update (FLIP "First")
+        const playFlip = flipAnimate(taskListEl);
+
         // Remove the dragged task from the array
         const [moved] = tasks.splice(dragSrcIdx, 1);
         // Use the stable task id to find the drop target after splice
@@ -1581,6 +1634,9 @@
         dragSrcIdx = null;
         saveTasks();
         renderTasks();
+
+        // Animate to new positions (FLIP "Play")
+        playFlip();
       });
 
       taskListEl.addEventListener("dragend", () => {
@@ -1710,6 +1766,7 @@
         running = true;
         iconPlay.style.display = "none";
         iconPause.style.display = "";
+        btnPlay.classList.add("playing");
         interval = setInterval(tick, 1000);
         updateMiniTimerVisibility();
       }
@@ -1719,6 +1776,7 @@
         clearInterval(interval);
         iconPlay.style.display = "";
         iconPause.style.display = "none";
+        btnPlay.classList.remove("playing");
         updateMiniTimerVisibility();
       }
 
