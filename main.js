@@ -4,6 +4,7 @@ const {
   screen,
   ipcMain,
   nativeTheme,
+  shell,
 } = require("electron");
 const path = require("path");
 
@@ -270,6 +271,10 @@ ipcMain.on("resize-height", (_, requestedHeight) => {
 
 ipcMain.handle("get-docked-side", () => dockedSide);
 ipcMain.handle("get-max-height", () => MAX_HEIGHT);
+
+ipcMain.on("open-external", (_, url) => {
+  shell.openExternal(url).catch(() => {});
+});
 
 // ── App lifecycle ────────────────────────────────────────────────────
 

@@ -223,15 +223,6 @@
         cursor: grabbing;
       }
 
-      #header .title {
-        flex: 1;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 1.4px;
-        text-transform: uppercase;
-        color: var(--accent);
-      }
-
       .header-btn {
         width: 20px;
         height: 20px;
@@ -249,92 +240,7 @@
       }
       .header-btn:hover {
         background: var(--glass-hover);
-        color: var(--text);
-      }
-
-      /* ── Settings row (above timer) ──────────────────────────────── */
-      #settings-row {
-        padding: 0 12px 4px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-        gap: 8px;
-      }
-
-      #settings-row label {
-        font-size: 9px;
-        color: var(--text-faint);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-
-      .toggle {
-        position: relative;
-        width: 22px;
-        height: 12px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: var(--toggle-bg);
-        border-radius: 6px;
-        outline: none;
-        cursor: pointer;
-        transition: background 0.2s;
-        flex-shrink: 0;
-      }
-      .toggle:checked {
-        background: var(--accent);
-      }
-      .toggle::before {
-        content: "";
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--text-dim);
-        transition:
-          transform 0.2s,
-          background 0.2s;
-      }
-      .toggle:checked::before {
-        transform: translateX(10px);
-        background: #fff;
-      }
-
-      /* ── Theme picker ────────────────────────────────────────────── */
-      #theme-picker {
-        display: flex;
-        gap: 2px;
-      }
-
-      .theme-btn {
-        font-size: 8px;
-        font-weight: 600;
-        font-family: var(--font);
-        padding: 2px 6px;
-        border: 1px solid var(--glass-border);
-        border-radius: 4px;
-        background: transparent;
-        color: var(--text-faint);
-        cursor: pointer;
-        transition:
-          background 0.15s,
-          color 0.15s;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .theme-btn:hover {
-        background: var(--glass-hover);
-        color: var(--text-dim);
-      }
-      .theme-btn.active {
-        background: var(--btn-bg-hover);
-        color: var(--text);
-        border-color: var(--text-faint);
+        color: var(--accent);
       }
 
       /* ── Divider ─────────────────────────────────────────────────── */
@@ -567,7 +473,7 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        border: 1.5px solid var(--text-dim);
+        border: 1.5px solid var(--accent);
         background: transparent;
         cursor: pointer;
         flex-shrink: 0;
@@ -579,19 +485,20 @@
           background 0.15s;
       }
       .task-check:hover {
-        border-color: var(--text);
+        border-color: var(--accent);
+        background: rgba(255, 45, 45, 0.1);
       }
 
       .task-item.done .task-check {
-        background: var(--accent);
-        border-color: var(--accent);
+        background: var(--text-faint);
+        border-color: var(--text-faint);
       }
       .task-item.done .task-check::after {
         content: "";
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.6);
+        background: var(--done-check-dot);
       }
 
       .task-text {
@@ -599,10 +506,31 @@
         font-size: 11px;
         line-height: 1.3;
         color: var(--text);
+        cursor: default;
       }
       .task-item.done .task-text {
-        text-decoration: line-through;
         color: var(--text-faint);
+        text-decoration: none;
+        background: linear-gradient(transparent 45%, var(--accent) 45%, var(--accent) 55%, transparent 55%);
+        background-size: 0% 100%;
+        background-repeat: no-repeat;
+        animation: strikethrough 0.3s ease forwards;
+      }
+      @keyframes strikethrough {
+        to { background-size: 100% 100%; }
+      }
+
+      .task-edit-input {
+        flex: 1;
+        font-size: 11px;
+        line-height: 1.3;
+        color: var(--text);
+        font-family: var(--font);
+        background: var(--input-bg-focus);
+        border: 1px solid var(--input-border-focus);
+        border-radius: 4px;
+        padding: 1px 4px;
+        outline: none;
       }
 
       .task-del {
@@ -665,13 +593,96 @@
         gap: 2px;
         padding-top: 2px;
       }
+
+      /* ── Settings panel (overlay) ─────────────────────────────────── */
+      #settings-panel {
+        display: none;
+        flex-direction: column;
+        padding: 12px;
+        gap: 14px;
+        flex: 1;
+        overflow-y: auto;
+      }
+      #settings-panel.open {
+        display: flex;
+      }
+      #settings-panel .settings-title {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-align: center;
+      }
+      #settings-panel .settings-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #settings-panel .settings-group-label {
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-dim);
+      }
+      #settings-panel .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      #settings-panel .settings-row label {
+        font-size: 10px;
+        color: var(--text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #settings-panel .credits {
+        margin-top: auto;
+        text-align: center;
+        font-size: 10px;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+      #settings-panel .credits a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: opacity 0.15s;
+      }
+      #settings-panel .credits a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+      }
+
+      /* hide main content when settings is open */
+      #main-content.hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <div id="root">
       <div id="panel">
         <div id="header">
-          <span class="title">Mini-pomodoro</span>
+          <button class="header-btn" id="settings-btn" title="Settings">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <span style="flex:1"></span>
           <button class="header-btn" id="close-btn" title="Close">
             <svg
               width="10"
@@ -688,20 +699,43 @@
           </button>
         </div>
 
-        <!-- Settings row: above timer -->
-        <div id="settings-row">
-          <label>
-            <input type="checkbox" class="toggle" id="keep-timer-toggle" />
-            <span>Show timer when collapsed</span>
-          </label>
-          <div id="theme-picker">
-            <button class="theme-btn" data-theme="light">Light</button>
-            <button class="theme-btn" data-theme="dark">Dark</button>
-            <button class="theme-btn active" data-theme="auto">Auto</button>
+        <!-- Settings panel (hidden by default) -->
+        <div id="settings-panel">
+          <div class="settings-title">Mini-pomodoro</div>
+
+          <div class="settings-group">
+            <div class="settings-group-label">Appearance</div>
+            <div class="settings-row">
+              <span style="font-size:10px;color:var(--text)">Theme</span>
+              <div id="theme-picker">
+                <button class="theme-btn" data-theme="light">Light</button>
+                <button class="theme-btn" data-theme="dark">Dark</button>
+                <button class="theme-btn active" data-theme="auto">Auto</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-label">Behaviour</div>
+            <div class="settings-row">
+              <label for="keep-timer-toggle">Show timer when collapsed</label>
+              <input type="checkbox" class="toggle" id="keep-timer-toggle" />
+            </div>
+          </div>
+
+          <div class="credits">
+            made with
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff2d2d" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-2px">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            by Ossama "skymen" Jouini<br />
+            <a href="https://github.com/skymen/mini-pomodoro" target="_blank">GitHub</a>
           </div>
         </div>
 
-        <div id="timer-section">
+        <!-- Main content (timer + tasks) -->
+        <div id="main-content">
+          <div id="timer-section">
           <div id="timer-top-row">
             <div id="timer-ring-small">
               <svg viewBox="0 0 48 48">
@@ -812,6 +846,7 @@
             <div id="done-list"></div>
           </details>
         </div>
+        </div> <!-- /main-content -->
       </div>
 
       <div id="arrow-strip">
@@ -981,6 +1016,29 @@
         window.electronAPI.closeWindow();
       });
 
+      // ── Settings panel toggle ──────────────────────────────────────
+      const settingsPanel = document.getElementById("settings-panel");
+      const mainContent = document.getElementById("main-content");
+      const settingsBtn = document.getElementById("settings-btn");
+
+      settingsBtn.addEventListener("click", () => {
+        const isOpen = settingsPanel.classList.toggle("open");
+        if (isOpen) {
+          mainContent.classList.add("hidden");
+        } else {
+          mainContent.classList.remove("hidden");
+        }
+        requestResize();
+      });
+
+      // Open external links in default browser
+      document.querySelectorAll('a[target="_blank"]').forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.electronAPI.openExternal(a.href);
+        });
+      });
+
       // ── Dynamic height ─────────────────────────────────────────────
       function requestResize() {
         // Double-rAF ensures layout has fully settled after DOM mutations
@@ -1121,6 +1179,54 @@
 
       taskListEl.addEventListener("click", handleTaskClick);
       doneListEl.addEventListener("click", handleTaskClick);
+
+      // ── Double-click to edit task text ─────────────────────────────
+      function startEditTask(taskItem, idx) {
+        const textEl = taskItem.querySelector(".task-text");
+        if (!textEl || taskItem.querySelector(".task-edit-input")) return;
+
+        const currentText = tasks[idx].text;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "task-edit-input";
+        input.value = currentText;
+
+        textEl.replaceWith(input);
+        input.focus();
+        input.select();
+
+        function commitEdit() {
+          const newText = input.value.trim();
+          if (newText && newText !== currentText) {
+            tasks[idx].text = newText;
+            saveTasks();
+          }
+          renderTasks();
+        }
+
+        input.addEventListener("blur", commitEdit);
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            input.blur();
+          } else if (e.key === "Escape") {
+            input.removeEventListener("blur", commitEdit);
+            renderTasks();
+          }
+        });
+      }
+
+      function handleTaskDblClick(e) {
+        const taskItem = e.target.closest(".task-item");
+        if (!taskItem) return;
+        // Don't edit if clicking on check, delete, or grip
+        if (e.target.closest(".task-check") || e.target.closest(".task-del") || e.target.closest(".task-grip")) return;
+        const idx = taskItem.dataset.idx !== undefined ? +taskItem.dataset.idx : +taskItem.querySelector(".task-check").dataset.i;
+        startEditTask(taskItem, idx);
+      }
+
+      taskListEl.addEventListener("dblclick", handleTaskDblClick);
+      doneListEl.addEventListener("dblclick", handleTaskDblClick);
 
       // ── Drag-and-drop reorder (incomplete tasks only) ──────────────
       let dragSrcIdx = null;
