@@ -6,25 +6,6 @@ const {
   nativeTheme,
 } = require("electron");
 const path = require("path");
-const fs = require("fs");
-
-const STATE_PATH = path.join(app.getPath("userData"), "window-state.json");
-
-function loadState() {
-  try {
-    return JSON.parse(fs.readFileSync(STATE_PATH, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
-function saveState(state) {
-  try {
-    fs.writeFileSync(STATE_PATH, JSON.stringify(state));
-  } catch {
-    // ignore write errors
-  }
-}
 
 let win;
 let tucked = false;
@@ -43,41 +24,21 @@ let currentHeight = MIN_HEIGHT;
 
 function createWindow() {
   const wa = screen.getPrimaryDisplay().workArea;
-  const saved = loadState();
 
   currentHeight = MIN_HEIGHT;
-
-  // Restore docked side from saved state
-  if (saved.dockedSide === "left" || saved.dockedSide === "right") {
-    dockedSide = saved.dockedSide;
-  }
-
-  // Compute initial X based on docked side
-  const startX = dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
-
-  // Restore Y position, or default to vertically centered
-  let startY;
-  if (typeof saved.y === "number") {
-    // Clamp to current work area bounds
-    startY = Math.max(
-      wa.y,
-      Math.min(saved.y, wa.y + wa.height - currentHeight),
-    );
-  } else {
-    startY = wa.y + Math.round((wa.height - currentHeight) / 2);
-  }
 
   win = new BrowserWindow({
     width: WIN_WIDTH,
     height: currentHeight,
-    x: startX,
-    y: startY,
+    x: wa.x + wa.width - WIN_WIDTH,
+    y: wa.y + Math.round((wa.height - currentHeight) / 2),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: true,
     hasShadow: false,
+    show: false,
     backgroundColor: "#00000000",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -89,12 +50,49 @@ function createWindow() {
   win.loadFile("index.html");
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Send initial theme to renderer once ready, then auto-dock
-  win.webContents.on("did-finish-load", () => {
+  // Once the renderer is ready, restore saved position from localStorage,
+  // show the window, then auto-dock.
+  win.webContents.on("did-finish-load", async () => {
     win.webContents.send(
       "system-theme",
       nativeTheme.shouldUseDarkColors ? "dark" : "light",
     );
+
+    // Read saved window state from renderer localStorage
+    try {
+      const json = await win.webContents.executeJavaScript(
+        `localStorage.getItem("pomo-window-state")`,
+      );
+      if (json) {
+        const saved = JSON.parse(json);
+        const wa = screen.getPrimaryDisplay().workArea;
+
+        if (saved.dockedSide === "left" || saved.dockedSide === "right") {
+          dockedSide = saved.dockedSide;
+        }
+
+        const startX =
+          dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
+
+        let startY;
+        if (typeof saved.y === "number") {
+          startY = Math.max(
+            wa.y,
+            Math.min(saved.y, wa.y + wa.height - currentHeight),
+          );
+        } else {
+          startY = wa.y + Math.round((wa.height - currentHeight) / 2);
+        }
+
+        win.setBounds({ x: startX, y: startY, width: WIN_WIDTH, height: currentHeight });
+        notifyDockedSide();
+      }
+    } catch {
+      // First launch or corrupt data — use defaults
+    }
+
+    win.show();
+
     // Auto-dock shortly after startup so the window appears briefly then tucks
     setTimeout(() => tuck(), 600);
   });
@@ -107,11 +105,14 @@ function createWindow() {
       );
   });
 
-  // Save position before the window is destroyed
+  // Save position to renderer localStorage before the window is destroyed
   win.on("close", () => {
     if (win) {
       const [, y] = win.getPosition();
-      saveState({ dockedSide, y });
+      const state = JSON.stringify({ dockedSide, y });
+      win.webContents.executeJavaScript(
+        `localStorage.setItem("pomo-window-state", ${JSON.stringify(state)})`,
+      ).catch(() => {});
     }
   });
 
