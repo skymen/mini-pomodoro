@@ -477,6 +477,7 @@
         flex-direction: column;
         gap: 2px;
         overflow-y: auto;
+        max-height: 200px;
       }
 
       #task-list::-webkit-scrollbar {
@@ -711,6 +712,18 @@
         flex-direction: column;
         gap: 2px;
         padding-top: 2px;
+        overflow-y: auto;
+        max-height: 150px;
+      }
+      #done-list::-webkit-scrollbar {
+        width: 3px;
+      }
+      #done-list::-webkit-scrollbar-thumb {
+        background: var(--text-faint);
+        border-radius: 3px;
+      }
+      #done-list::-webkit-scrollbar-track {
+        background: transparent;
       }
 
       /* ── Settings panel (overlay) ─────────────────────────────────── */

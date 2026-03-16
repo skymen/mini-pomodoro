@@ -264,9 +264,8 @@ ipcMain.on("resize-height", (_, requestedHeight) => {
   if (h === currentHeight) return;
 
   const [x, y] = win.getPosition();
-  const newY = y + Math.round((currentHeight - h) / 2);
   currentHeight = h;
-  win.setBounds({ x, y: newY, width: WIN_WIDTH, height: h });
+  win.setBounds({ x, y, width: WIN_WIDTH, height: h });
 });
 
 ipcMain.handle("get-docked-side", () => dockedSide);
