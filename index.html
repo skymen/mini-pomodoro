@@ -616,6 +616,12 @@
           strike-sweep 0.3s ease forwards,
           strike-fade 0.3s ease 0.25s forwards;
       }
+      /* Already-done tasks: skip the animation, show final state */
+      .task-item.done.strike-no-anim .task-text::after {
+        animation: none;
+        width: 100%;
+        background: var(--text-faint);
+      }
       @keyframes strike-sweep {
         from {
           width: 0;
@@ -1232,7 +1238,13 @@
       const doneListEl = document.getElementById("done-list");
       const doneCountEl = document.getElementById("done-count");
       const clearDoneBtn = document.getElementById("clear-done-btn");
+      let _nextId = 1;
+      function genId() { return _nextId++; }
       let tasks = JSON.parse(localStorage.getItem("pomo-tasks") || "[]");
+      // Migrate tasks that lack an id (from older versions)
+      tasks.forEach((t) => { if (!t.id) t.id = genId(); });
+      // Ensure _nextId is above any existing id
+      tasks.forEach((t) => { if (t.id >= _nextId) _nextId = t.id + 1; });
 
       clearDoneBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -1255,52 +1267,142 @@
         localStorage.setItem("pomo-tasks", JSON.stringify(tasks));
       }
 
-      function renderTasks() {
-        taskListEl.innerHTML = "";
-        doneListEl.innerHTML = "";
+      // Helper: create a DOM element for an incomplete task
+      function createIncompleteEl(t, origIdx) {
+        const el = document.createElement("div");
+        el.className = "task-item";
+        el.draggable = true;
+        el.dataset.idx = origIdx;
+        el.dataset.id = t.id;
+        el.innerHTML = `
+          <div class="task-grip" title="Drag to reorder">
+            <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor">
+              <circle cx="1.5" cy="1.5" r="1"/><circle cx="4.5" cy="1.5" r="1"/>
+              <circle cx="1.5" cy="5" r="1"/><circle cx="4.5" cy="5" r="1"/>
+              <circle cx="1.5" cy="8.5" r="1"/><circle cx="4.5" cy="8.5" r="1"/>
+            </svg>
+          </div>
+          <div class="task-check" data-i="${origIdx}"></div>
+          <span class="task-text">${escapeHtml(t.text)}</span>
+          <button class="task-del" data-i="${origIdx}">&times;</button>
+        `;
+        return el;
+      }
 
+      // Helper: create a DOM element for a completed task
+      function createDoneEl(t, origIdx, animateStrike) {
+        const el = document.createElement("div");
+        el.className = "task-item done";
+        el.dataset.id = t.id;
+        if (!animateStrike) el.classList.add("strike-no-anim");
+        el.innerHTML = `
+          <div class="task-check" data-i="${origIdx}"></div>
+          <span class="task-text">${escapeHtml(t.text)}</span>
+          <button class="task-del" data-i="${origIdx}">&times;</button>
+        `;
+        return el;
+      }
+
+      // Set of task IDs that have already been rendered as done at least once.
+      // Used to suppress the strikethrough animation on re-renders.
+      const _renderedDoneIds = new Set();
+      // Pre-seed with tasks already done on load so they don't animate
+      tasks.forEach((t) => { if (t.done) _renderedDoneIds.add(t.id); });
+
+      // Reconcile a container's children with a list of desired elements,
+      // keyed by data-id, reusing existing DOM nodes where possible.
+      function reconcileList(container, desiredEls) {
+        const desiredMap = new Map();          // id -> new element
+        const desiredOrder = [];               // ordered ids
+        for (const el of desiredEls) {
+          const id = el.dataset.id;
+          desiredMap.set(id, el);
+          desiredOrder.push(id);
+        }
+
+        const existingMap = new Map();
+        for (const child of [...container.children]) {
+          existingMap.set(child.dataset.id, child);
+        }
+
+        // Remove elements no longer in the list
+        for (const [id, child] of existingMap) {
+          if (!desiredMap.has(id)) {
+            container.removeChild(child);
+            existingMap.delete(id);
+          }
+        }
+
+        // Update existing elements in-place; insert new ones
+        let refNode = container.firstChild;
+        for (const id of desiredOrder) {
+          if (existingMap.has(id)) {
+            const existing = existingMap.get(id);
+            const desired = desiredMap.get(id);
+            // Update mutable attributes (idx may have changed)
+            if (existing.dataset.idx !== desired.dataset.idx) {
+              existing.dataset.idx = desired.dataset.idx;
+            }
+            // Update data-i on check and delete buttons (index may shift)
+            const eCheck = existing.querySelector(".task-check");
+            const dCheck = desired.querySelector(".task-check");
+            if (eCheck && dCheck && eCheck.dataset.i !== dCheck.dataset.i) {
+              eCheck.dataset.i = dCheck.dataset.i;
+            }
+            const eDel = existing.querySelector(".task-del");
+            const dDel = desired.querySelector(".task-del");
+            if (eDel && dDel && eDel.dataset.i !== dDel.dataset.i) {
+              eDel.dataset.i = dDel.dataset.i;
+            }
+            // Update text if changed
+            const eText = existing.querySelector(".task-text");
+            const dText = desired.querySelector(".task-text");
+            if (eText && dText && eText.innerHTML !== dText.innerHTML) {
+              eText.innerHTML = dText.innerHTML;
+            }
+            // Move to correct position if needed
+            if (existing !== refNode) {
+              container.insertBefore(existing, refNode);
+            } else {
+              refNode = refNode.nextSibling;
+            }
+          } else {
+            // New element – insert it (it will get the fadeIn animation via CSS)
+            const newEl = desiredMap.get(id);
+            container.insertBefore(newEl, refNode);
+          }
+        }
+      }
+
+      function renderTasks() {
         const incomplete = tasks.filter((t) => !t.done);
         const complete = tasks.filter((t) => t.done);
 
-        // Render incomplete tasks (draggable, reorderable)
-        incomplete.forEach((t) => {
-          const origIdx = tasks.indexOf(t);
-          const el = document.createElement("div");
-          el.className = "task-item";
-          el.draggable = true;
-          el.dataset.idx = origIdx;
-          el.innerHTML = `
-            <div class="task-grip" title="Drag to reorder">
-              <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor">
-                <circle cx="1.5" cy="1.5" r="1"/><circle cx="4.5" cy="1.5" r="1"/>
-                <circle cx="1.5" cy="5" r="1"/><circle cx="4.5" cy="5" r="1"/>
-                <circle cx="1.5" cy="8.5" r="1"/><circle cx="4.5" cy="8.5" r="1"/>
-              </svg>
-            </div>
-            <div class="task-check" data-i="${origIdx}"></div>
-            <span class="task-text">${escapeHtml(t.text)}</span>
-            <button class="task-del" data-i="${origIdx}">&times;</button>
-          `;
-          taskListEl.appendChild(el);
+        // Build desired elements for incomplete tasks
+        const incompleteEls = incomplete.map((t) => {
+          return createIncompleteEl(t, tasks.indexOf(t));
         });
 
-        // Render done tasks in collapsible section
+        // Build desired elements for done tasks
+        const doneEls = complete.map((t) => {
+          const alreadyRenderedDone = _renderedDoneIds.has(t.id);
+          return createDoneEl(t, tasks.indexOf(t), !alreadyRenderedDone);
+        });
+
+        // Reconcile both lists
+        reconcileList(taskListEl, incompleteEls);
+        reconcileList(doneListEl, doneEls);
+
+        // Track which tasks have been rendered as done
+        _renderedDoneIds.clear();
+        complete.forEach((t) => _renderedDoneIds.add(t.id));
+
+        // Update done section visibility
         doneCountEl.textContent = `${complete.length} done`;
         if (complete.length === 0) {
           doneSection.style.display = "none";
         } else {
           doneSection.style.display = "";
-          complete.forEach((t) => {
-            const origIdx = tasks.indexOf(t);
-            const el = document.createElement("div");
-            el.className = "task-item done";
-            el.innerHTML = `
-              <div class="task-check" data-i="${origIdx}"></div>
-              <span class="task-text">${escapeHtml(t.text)}</span>
-              <button class="task-del" data-i="${origIdx}">&times;</button>
-            `;
-            doneListEl.appendChild(el);
-          });
         }
 
         requestResize();
@@ -1317,7 +1419,7 @@
       function addTask() {
         const text = taskInput.value.trim();
         if (!text) return;
-        tasks.push({ text, done: false });
+        tasks.push({ id: genId(), text, done: false });
         saveTasks();
         renderTasks();
         taskInput.value = "";
