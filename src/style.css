@@ -499,6 +499,7 @@ body {
   transition: background 0.12s;
   flex-shrink: 0;
   position: relative;
+  cursor: grab;
 }
 .task-item.fade-in {
   animation: fadeIn 0.15s ease;
@@ -513,13 +514,16 @@ body {
   background: var(--glass-hover);
 }
 .task-item.sortable-chosen {
+  cursor: grabbing;
   background: var(--glass-hover);
 }
-.task-item.sortable-drag {
+.task-item.sortable-drag,
+.task-item.sortable-fallback {
   opacity: 0.9;
   background: var(--glass-strong);
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: grabbing;
 }
 
 @keyframes fadeIn {
@@ -536,7 +540,6 @@ body {
 .task-grip {
   width: 10px;
   flex-shrink: 0;
-  cursor: grab;
   color: var(--text-faint);
   display: flex;
   align-items: center;
@@ -547,8 +550,10 @@ body {
 .task-item:hover .task-grip {
   opacity: 1;
 }
-.task-grip:active {
-  cursor: grabbing;
+
+/* Done items are not draggable */
+.task-item.done {
+  cursor: default;
 }
 
 .task-check {

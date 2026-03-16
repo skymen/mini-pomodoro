@@ -456,12 +456,18 @@ function initSortable() {
 
   sortableInstance = Sortable.create(taskListEl, {
     animation: 200,
-    handle: ".task-grip",
     ghostClass: "sortable-ghost",
     chosenClass: "sortable-chosen",
     dragClass: "sortable-drag",
     easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-    forceFallback: false,
+    // Use fallback mode to avoid the native HTML5 DnD backend entirely.
+    // This prevents the OS drop-cursor flash and gives us full control
+    // over the drag visual.
+    forceFallback: true,
+    fallbackClass: "sortable-fallback",
+    // Don't drag when clicking interactive elements
+    filter: ".task-check, .task-del, .task-edit-input",
+    preventOnFilter: false,
     onEnd(evt) {
       const { oldIndex, newIndex } = evt;
       if (oldIndex === newIndex) return;
@@ -503,6 +509,18 @@ function initSortable() {
       }
 
       requestResize();
+
+      // After a fallback drag, the browser doesn't re-evaluate :hover
+      // because no real pointer-move event fires once the item lands.
+      // Nudge the hover state by dispatching a synthetic pointer event
+      // on the element currently under the cursor.
+      requestAnimationFrame(() => {
+        const el = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
+        if (el) {
+          el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+          el.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+        }
+      });
     },
   });
 }
