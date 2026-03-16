@@ -543,7 +543,7 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        border: 1.5px solid var(--accent);
+        border: 1.5px solid var(--text-faint);
         background: transparent;
         cursor: pointer;
         flex-shrink: 0;
@@ -554,21 +554,39 @@
           border-color 0.15s,
           background 0.15s;
       }
-      .task-check:hover {
+      .task-item:not(.done):hover .task-check {
         border-color: var(--accent);
         background: rgba(255, 45, 45, 0.1);
       }
 
+      /* Done checkmark: grey SVG checkmark by default, no circle */
       .task-item.done .task-check {
-        background: var(--text-faint);
-        border-color: var(--text-faint);
+        background: transparent;
+        border-color: transparent;
       }
       .task-item.done .task-check::after {
         content: "";
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--done-check-dot);
+        width: 10px;
+        height: 10px;
+        background: var(--text-faint);
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        -webkit-mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+      /* On hover of done task, red checkmark inside circle */
+      .task-item.done:hover .task-check {
+        background: var(--text-faint);
+        border-color: var(--text-faint);
+      }
+      .task-item.done:hover .task-check::after {
+        width: 8px;
+        height: 8px;
+        background: var(--accent);
       }
 
       .task-text {
