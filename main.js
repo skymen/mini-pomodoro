@@ -1,4 +1,10 @@
-const { app, BrowserWindow, screen, ipcMain } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  screen,
+  ipcMain,
+  nativeTheme,
+} = require("electron");
 const path = require("path");
 
 let win;
@@ -6,7 +12,9 @@ let tucked = false;
 let tucking = false;
 let dockedSide = "right";
 const ARROW_TAB = 20;
+const ARROW_TAB_WIDE = 40;
 const WIN_WIDTH = 290;
+let currentArrowTab = ARROW_TAB;
 const MIN_HEIGHT = 160;
 const MAX_HEIGHT = 560;
 const TUCK_DELAY = 800;
@@ -41,6 +49,22 @@ function createWindow() {
 
   win.loadFile("index.html");
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  // Send initial theme to renderer once ready
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.send(
+      "system-theme",
+      nativeTheme.shouldUseDarkColors ? "dark" : "light",
+    );
+  });
+
+  nativeTheme.on("updated", () => {
+    if (win)
+      win.webContents.send(
+        "system-theme",
+        nativeTheme.shouldUseDarkColors ? "dark" : "light",
+      );
+  });
 
   win.on("closed", () => {
     win = null;
@@ -85,10 +109,10 @@ function snapToEdge() {
   } else {
     targetX = 0;
   }
+  notifyDockedSide();
 
   lerpAnimate(curX, curY, targetX, curY, 300, () => {
     tucked = false;
-    notifyDockedSide();
   });
 }
 
@@ -100,9 +124,9 @@ function tuck() {
 
   let targetX;
   if (dockedSide === "right") {
-    targetX = screenW - ARROW_TAB;
+    targetX = screenW - currentArrowTab;
   } else {
-    targetX = -(WIN_WIDTH - ARROW_TAB);
+    targetX = -(WIN_WIDTH - currentArrowTab);
   }
 
   notifyTuckState(true);
@@ -177,14 +201,31 @@ ipcMain.on("close-window", () => {
 
 ipcMain.on("resize-height", (_, requestedHeight) => {
   if (!win) return;
-  const h = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Math.round(requestedHeight)));
+  const h = Math.max(
+    MIN_HEIGHT,
+    Math.min(MAX_HEIGHT, Math.round(requestedHeight)),
+  );
   if (h === currentHeight) return;
 
   const [x, y] = win.getPosition();
-  // Keep vertical center stable
   const newY = y + Math.round((currentHeight - h) / 2);
   currentHeight = h;
   win.setBounds({ x, y: newY, width: WIN_WIDTH, height: h });
+});
+
+ipcMain.on("set-arrow-width", (_, wide) => {
+  currentArrowTab = wide ? ARROW_TAB_WIDE : ARROW_TAB;
+  if (tucked && win && !tucking) {
+    const { width: screenW } = getWorkArea();
+    const [, curY] = win.getPosition();
+    let targetX;
+    if (dockedSide === "right") {
+      targetX = screenW - currentArrowTab;
+    } else {
+      targetX = -(WIN_WIDTH - currentArrowTab);
+    }
+    win.setPosition(targetX, curY, false);
+  }
 });
 
 ipcMain.handle("get-docked-side", () => dockedSide);

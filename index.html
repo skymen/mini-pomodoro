@@ -13,6 +13,7 @@
         box-sizing: border-box;
       }
 
+      /* ── Theme variables ──────────────────────────────────────────── */
       :root {
         --glass: rgba(12, 12, 14, 0.52);
         --glass-strong: rgba(12, 12, 14, 0.62);
@@ -21,11 +22,37 @@
         --text: rgba(255, 255, 255, 0.85);
         --text-dim: rgba(255, 255, 255, 0.4);
         --text-faint: rgba(255, 255, 255, 0.2);
+        --input-bg: rgba(255, 255, 255, 0.04);
+        --input-bg-focus: rgba(255, 255, 255, 0.06);
+        --input-border-focus: rgba(255, 255, 255, 0.15);
+        --btn-bg: rgba(255, 255, 255, 0.05);
+        --btn-bg-hover: rgba(255, 255, 255, 0.1);
+        --toggle-bg: rgba(255, 255, 255, 0.08);
+        --toggle-bg-checked: rgba(255, 255, 255, 0.25);
+        --done-check-dot: rgba(0, 0, 0, 0.4);
         --blur: blur(40px) saturate(1.8);
         --radius: 14px;
         --radius-sm: 8px;
         --font:
           -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+      }
+
+      html.light {
+        --glass: rgba(255, 255, 255, 0.55);
+        --glass-strong: rgba(255, 255, 255, 0.65);
+        --glass-border: rgba(0, 0, 0, 0.08);
+        --glass-hover: rgba(0, 0, 0, 0.04);
+        --text: rgba(0, 0, 0, 0.82);
+        --text-dim: rgba(0, 0, 0, 0.45);
+        --text-faint: rgba(0, 0, 0, 0.2);
+        --input-bg: rgba(0, 0, 0, 0.04);
+        --input-bg-focus: rgba(0, 0, 0, 0.06);
+        --input-border-focus: rgba(0, 0, 0, 0.15);
+        --btn-bg: rgba(0, 0, 0, 0.05);
+        --btn-bg-hover: rgba(0, 0, 0, 0.1);
+        --toggle-bg: rgba(0, 0, 0, 0.08);
+        --toggle-bg-checked: rgba(0, 0, 0, 0.25);
+        --done-check-dot: rgba(255, 255, 255, 0.5);
       }
 
       html,
@@ -40,13 +67,10 @@
       }
 
       /*
-   * Layout: flex row.
-   * Docked RIGHT (default) => [panel] [arrow]  (arrow on far right)
-   * Docked LEFT            => [arrow] [panel]  (arrow on far left)
-   *
-   * When tucked right, rightmost 20px stay on screen = arrow strip. Correct.
-   * When tucked left, leftmost 20px stay on screen = arrow strip. Correct.
-   */
+       * Layout: flex row.
+       * Docked RIGHT (default) => row-reverse => [arrow] [panel] visually becomes [panel][arrow]
+       * Docked LEFT            => row         => [panel] [arrow]  but arrow is on left via DOM order
+       */
       #root {
         display: flex;
         width: 100%;
@@ -59,7 +83,7 @@
 
       /* ── Arrow strip ─────────────────────────────────────────────── */
       #arrow-strip {
-        width: 20px;
+        width: 40px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -85,12 +109,6 @@
         opacity: 1;
       }
 
-      /*
-   * Rounding: the edge touching the panel side gets rounded,
-   * the edge flush with the screen gets no radius.
-   * dock-right: arrow is rightmost => round left corners, flat right
-   * dock-left:  arrow is leftmost  => round right corners, flat left
-   */
       #root:not(.dock-left) #arrow-tab {
         border-radius: 8px 0 0 8px;
         border-right: none;
@@ -110,12 +128,12 @@
         color: var(--text);
       }
 
-      /* ── Mini timer ──────────────────────────────────────────────── */
+      /* ── Mini timer (2X bigger: 40px wide) ──────────────────────── */
       #mini-timer {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        width: 20px;
+        width: 40px;
         display: none;
         flex-direction: column;
         align-items: center;
@@ -125,8 +143,8 @@
         backdrop-filter: var(--blur);
         -webkit-backdrop-filter: var(--blur);
         border: 1px solid var(--glass-border);
-        padding: 5px 0;
-        gap: 2px;
+        padding: 8px 0;
+        gap: 3px;
       }
       #mini-timer.visible {
         display: flex;
@@ -142,26 +160,26 @@
       }
 
       #mini-timer-ring {
-        width: 14px;
-        height: 14px;
+        width: 28px;
+        height: 28px;
         transform: rotate(-90deg);
       }
       #mini-ring-bg {
         fill: none;
         stroke: var(--text-faint);
-        stroke-width: 3;
+        stroke-width: 2.5;
       }
       #mini-ring-progress {
         fill: none;
         stroke: var(--text-dim);
-        stroke-width: 3;
+        stroke-width: 2.5;
         stroke-linecap: round;
       }
 
       #mini-timer-text {
-        font-size: 7px;
+        font-size: 9px;
         font-weight: 600;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.3px;
         color: var(--text-dim);
         font-variant-numeric: tabular-nums;
       }
@@ -220,6 +238,91 @@
       .header-btn:hover {
         background: var(--glass-hover);
         color: var(--text);
+      }
+
+      /* ── Settings row (above timer) ──────────────────────────────── */
+      #settings-row {
+        padding: 0 12px 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
+      #settings-row label {
+        font-size: 9px;
+        color: var(--text-faint);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .toggle {
+        position: relative;
+        width: 22px;
+        height: 12px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--toggle-bg);
+        border-radius: 6px;
+        outline: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+      }
+      .toggle:checked {
+        background: var(--toggle-bg-checked);
+      }
+      .toggle::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        transition:
+          transform 0.2s,
+          background 0.2s;
+      }
+      .toggle:checked::before {
+        transform: translateX(10px);
+        background: var(--text);
+      }
+
+      /* ── Theme picker ────────────────────────────────────────────── */
+      #theme-picker {
+        display: flex;
+        gap: 2px;
+      }
+
+      .theme-btn {
+        font-size: 8px;
+        font-weight: 600;
+        font-family: var(--font);
+        padding: 2px 6px;
+        border: 1px solid var(--glass-border);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-faint);
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .theme-btn:hover {
+        background: var(--glass-hover);
+        color: var(--text-dim);
+      }
+      .theme-btn.active {
+        background: var(--btn-bg-hover);
+        color: var(--text);
+        border-color: var(--text-faint);
       }
 
       /* ── Divider ─────────────────────────────────────────────────── */
@@ -310,7 +413,7 @@
         height: 26px;
         border: none;
         border-radius: 6px;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--btn-bg);
         color: var(--text-dim);
         cursor: pointer;
         display: flex;
@@ -321,7 +424,7 @@
           color 0.15s;
       }
       .t-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--btn-bg-hover);
         color: var(--text);
       }
 
@@ -331,7 +434,6 @@
         flex-direction: column;
         padding: 8px 12px;
         gap: 6px;
-        /* No flex:1 -- grows naturally with content */
       }
 
       #task-input-row {
@@ -344,7 +446,7 @@
         padding: 6px 9px;
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-sm);
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--input-bg);
         color: var(--text);
         font-size: 11px;
         font-family: var(--font);
@@ -354,8 +456,8 @@
           background 0.15s;
       }
       #task-input:focus {
-        border-color: rgba(255, 255, 255, 0.15);
-        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--input-border-focus);
+        background: var(--input-bg-focus);
       }
       #task-input::placeholder {
         color: var(--text-faint);
@@ -366,7 +468,7 @@
         height: 28px;
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-sm);
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--input-bg);
         color: var(--text-dim);
         font-size: 15px;
         cursor: pointer;
@@ -378,7 +480,7 @@
           color 0.15s;
       }
       #add-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--btn-bg-hover);
         color: var(--text);
       }
 
@@ -393,7 +495,7 @@
         width: 3px;
       }
       #task-list::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--text-faint);
         border-radius: 3px;
       }
       #task-list::-webkit-scrollbar-track {
@@ -413,6 +515,12 @@
       .task-item:hover {
         background: var(--glass-hover);
       }
+      .task-item.drag-over {
+        border-top: 2px solid var(--text-dim);
+      }
+      .task-item.dragging {
+        opacity: 0.4;
+      }
 
       @keyframes fadeIn {
         from {
@@ -423,6 +531,24 @@
           opacity: 1;
           transform: translateY(0);
         }
+      }
+
+      .task-grip {
+        width: 10px;
+        flex-shrink: 0;
+        cursor: grab;
+        color: var(--text-faint);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.12s;
+      }
+      .task-item:hover .task-grip {
+        opacity: 1;
+      }
+      .task-grip:active {
+        cursor: grabbing;
       }
 
       .task-check {
@@ -453,7 +579,7 @@
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.4);
+        background: var(--done-check-dot);
       }
 
       .task-text {
@@ -487,55 +613,45 @@
         color: var(--text);
       }
 
-      /* ── Settings row ─────────────────────────────────────────────── */
-      #settings-row {
-        padding: 4px 12px 8px;
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
+      /* ── Done section (collapsible) ──────────────────────────────── */
+      #done-section {
+        margin-top: 2px;
       }
 
-      #settings-row label {
+      #done-section summary {
         font-size: 9px;
         color: var(--text-faint);
         cursor: pointer;
+        padding: 3px 6px;
+        border-radius: 4px;
+        outline: none;
+        list-style: none;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
+        transition: color 0.15s;
+      }
+      #done-section summary:hover {
+        color: var(--text-dim);
+      }
+      #done-section summary::-webkit-details-marker {
+        display: none;
       }
 
-      .toggle {
-        position: relative;
-        width: 22px;
-        height: 12px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 6px;
-        outline: none;
-        cursor: pointer;
-        transition: background 0.2s;
-        flex-shrink: 0;
-      }
-      .toggle:checked {
-        background: rgba(255, 255, 255, 0.25);
-      }
-      .toggle::before {
-        content: "";
-        position: absolute;
-        top: 2px;
-        left: 2px;
+      #done-section summary .chevron {
         width: 8px;
         height: 8px;
-        border-radius: 50%;
-        background: var(--text-dim);
-        transition:
-          transform 0.2s,
-          background 0.2s;
+        transition: transform 0.2s;
       }
-      .toggle:checked::before {
-        transform: translateX(10px);
-        background: var(--text);
+      #done-section[open] summary .chevron {
+        transform: rotate(90deg);
+      }
+
+      #done-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-top: 2px;
       }
     </style>
   </head>
@@ -558,6 +674,19 @@
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+        </div>
+
+        <!-- Settings row: above timer -->
+        <div id="settings-row">
+          <label>
+            <input type="checkbox" class="toggle" id="keep-timer-toggle" />
+            <span>Show timer when collapsed</span>
+          </label>
+          <div id="theme-picker">
+            <button class="theme-btn" data-theme="light">Light</button>
+            <button class="theme-btn" data-theme="dark">Dark</button>
+            <button class="theme-btn active" data-theme="auto">Auto</button>
+          </div>
         </div>
 
         <div id="timer-section">
@@ -653,13 +782,23 @@
             <button id="add-btn">+</button>
           </div>
           <div id="task-list"></div>
-        </div>
-
-        <div id="settings-row">
-          <label>
-            <input type="checkbox" class="toggle" id="keep-timer-toggle" />
-            <span>Show timer when collapsed</span>
-          </label>
+          <details id="done-section">
+            <summary>
+              <svg
+                class="chevron"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              <span id="done-count">0 done</span>
+            </summary>
+            <div id="done-list"></div>
+          </details>
         </div>
       </div>
 
@@ -720,6 +859,38 @@
         audio.play().catch(() => {});
       }
 
+      // ── Theme system ───────────────────────────────────────────────
+      let themePref = localStorage.getItem("pomo-theme") || "auto";
+      let systemTheme = "dark"; // updated by main process
+
+      function applyTheme() {
+        const effective = themePref === "auto" ? systemTheme : themePref;
+        document.documentElement.classList.toggle(
+          "light",
+          effective === "light",
+        );
+
+        // Update button active states
+        document.querySelectorAll(".theme-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.theme === themePref);
+        });
+      }
+
+      document.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          themePref = btn.dataset.theme;
+          localStorage.setItem("pomo-theme", themePref);
+          applyTheme();
+        });
+      });
+
+      window.electronAPI.onSystemTheme((theme) => {
+        systemTheme = theme;
+        applyTheme();
+      });
+
+      applyTheme();
+
       // ── Side tracking ──────────────────────────────────────────────
       let dockedSide = "right";
       const rootEl = document.getElementById("root");
@@ -735,9 +906,6 @@
           rootEl.classList.remove("dock-left");
         }
 
-        // Arrow points inward (toward the panel / screen center)
-        // Docked right => arrow strip is on right => arrow should point LEFT (toward center)
-        // Docked left  => arrow strip is on left  => arrow should point RIGHT (toward center)
         if (side === "right") {
           arrowIcon.innerHTML = '<polyline points="15 18 9 12 15 6" />';
         } else {
@@ -803,9 +971,8 @@
 
       // ── Dynamic height ─────────────────────────────────────────────
       function requestResize() {
-        // Measure the natural height the panel wants
         const panel = document.getElementById("panel");
-        const desired = panel.scrollHeight + 12; // 6px margin top + 6px bottom
+        const desired = panel.scrollHeight + 12;
         window.electronAPI.resizeHeight(desired);
       }
 
@@ -813,7 +980,18 @@
       const taskInput = document.getElementById("task-input");
       const addBtn = document.getElementById("add-btn");
       const taskListEl = document.getElementById("task-list");
+      const doneSection = document.getElementById("done-section");
+      const doneListEl = document.getElementById("done-list");
+      const doneCountEl = document.getElementById("done-count");
       let tasks = JSON.parse(localStorage.getItem("pomo-tasks") || "[]");
+
+      // Track collapsed state for done section
+      const doneWasOpen = localStorage.getItem("pomo-done-open") === "true";
+      if (doneWasOpen) doneSection.open = true;
+      doneSection.addEventListener("toggle", () => {
+        localStorage.setItem("pomo-done-open", doneSection.open);
+        requestAnimationFrame(requestResize);
+      });
 
       function saveTasks() {
         localStorage.setItem("pomo-tasks", JSON.stringify(tasks));
@@ -821,24 +999,52 @@
 
       function renderTasks() {
         taskListEl.innerHTML = "";
+        doneListEl.innerHTML = "";
 
         const incomplete = tasks.filter((t) => !t.done);
         const complete = tasks.filter((t) => t.done);
-        const ordered = [...incomplete, ...complete];
 
-        ordered.forEach((t) => {
+        // Render incomplete tasks (draggable, reorderable)
+        incomplete.forEach((t) => {
           const origIdx = tasks.indexOf(t);
           const el = document.createElement("div");
-          el.className = "task-item" + (t.done ? " done" : "");
+          el.className = "task-item";
+          el.draggable = true;
+          el.dataset.idx = origIdx;
           el.innerHTML = `
-        <div class="task-check" data-i="${origIdx}"></div>
-        <span class="task-text">${escapeHtml(t.text)}</span>
-        <button class="task-del" data-i="${origIdx}">&times;</button>
-      `;
+            <div class="task-grip" title="Drag to reorder">
+              <svg width="6" height="10" viewBox="0 0 6 10" fill="currentColor">
+                <circle cx="1.5" cy="1.5" r="1"/><circle cx="4.5" cy="1.5" r="1"/>
+                <circle cx="1.5" cy="5" r="1"/><circle cx="4.5" cy="5" r="1"/>
+                <circle cx="1.5" cy="8.5" r="1"/><circle cx="4.5" cy="8.5" r="1"/>
+              </svg>
+            </div>
+            <div class="task-check" data-i="${origIdx}"></div>
+            <span class="task-text">${escapeHtml(t.text)}</span>
+            <button class="task-del" data-i="${origIdx}">&times;</button>
+          `;
           taskListEl.appendChild(el);
         });
 
-        // After rendering, request a window resize
+        // Render done tasks in collapsible section
+        doneCountEl.textContent = `${complete.length} done`;
+        if (complete.length === 0) {
+          doneSection.style.display = "none";
+        } else {
+          doneSection.style.display = "";
+          complete.forEach((t) => {
+            const origIdx = tasks.indexOf(t);
+            const el = document.createElement("div");
+            el.className = "task-item done";
+            el.innerHTML = `
+              <div class="task-check" data-i="${origIdx}"></div>
+              <span class="task-text">${escapeHtml(t.text)}</span>
+              <button class="task-del" data-i="${origIdx}">&times;</button>
+            `;
+            doneListEl.appendChild(el);
+          });
+        }
+
         requestAnimationFrame(requestResize);
       }
 
@@ -866,7 +1072,8 @@
         if (e.key === "Enter") addTask();
       });
 
-      taskListEl.addEventListener("click", (e) => {
+      // Click handler for checks and deletes (both lists)
+      function handleTaskClick(e) {
         const check = e.target.closest(".task-check");
         const del = e.target.closest(".task-del");
         if (check) {
@@ -881,6 +1088,71 @@
           saveTasks();
           renderTasks();
         }
+      }
+
+      taskListEl.addEventListener("click", handleTaskClick);
+      doneListEl.addEventListener("click", handleTaskClick);
+
+      // ── Drag-and-drop reorder (incomplete tasks only) ──────────────
+      let dragSrcIdx = null;
+
+      taskListEl.addEventListener("dragstart", (e) => {
+        const item = e.target.closest(".task-item");
+        if (!item) return;
+        dragSrcIdx = +item.dataset.idx;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragSrcIdx);
+      });
+
+      taskListEl.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const item = e.target.closest(".task-item");
+        // Clear all drag-over indicators
+        taskListEl
+          .querySelectorAll(".task-item")
+          .forEach((el) => el.classList.remove("drag-over"));
+        if (item) item.classList.add("drag-over");
+      });
+
+      taskListEl.addEventListener("dragleave", (e) => {
+        const item = e.target.closest(".task-item");
+        if (item) item.classList.remove("drag-over");
+      });
+
+      taskListEl.addEventListener("drop", (e) => {
+        e.preventDefault();
+        taskListEl.querySelectorAll(".task-item").forEach((el) => {
+          el.classList.remove("drag-over");
+          el.classList.remove("dragging");
+        });
+
+        const dropItem = e.target.closest(".task-item");
+        if (!dropItem || dragSrcIdx === null) return;
+        const dropIdx = +dropItem.dataset.idx;
+        if (dragSrcIdx === dropIdx) return;
+
+        // Move task in the array
+        const [moved] = tasks.splice(dragSrcIdx, 1);
+        // Find new insertion point (dropIdx may have shifted)
+        const newDropIdx = tasks.indexOf(
+          tasks.find((t) => tasks.indexOf(t) === dropIdx) || null,
+        );
+        const insertAt = newDropIdx !== -1 ? newDropIdx : tasks.length;
+        tasks.splice(insertAt, 0, moved);
+
+        dragSrcIdx = null;
+        saveTasks();
+        renderTasks();
+      });
+
+      taskListEl.addEventListener("dragend", () => {
+        dragSrcIdx = null;
+        taskListEl.querySelectorAll(".task-item").forEach((el) => {
+          el.classList.remove("drag-over");
+          el.classList.remove("dragging");
+        });
       });
 
       renderTasks();
@@ -948,7 +1220,8 @@
       }
 
       function updateMiniTimerVisibility() {
-        if (isTucked && running && keepTimerToggle.checked) {
+        const showMini = isTucked && running && keepTimerToggle.checked;
+        if (showMini) {
           miniTimerEl.classList.add("visible");
           arrowTab.classList.remove("visible");
         } else if (isTucked) {
@@ -957,6 +1230,8 @@
         } else {
           miniTimerEl.classList.remove("visible");
         }
+        // Tell main process so it uses the wider tuck offset
+        window.electronAPI.setArrowWidth(showMini);
       }
 
       function tick() {
