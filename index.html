@@ -504,9 +504,11 @@
         padding: 5px 6px;
         border-radius: 6px;
         transition: background 0.12s;
-        animation: fadeIn 0.15s ease;
         flex-shrink: 0;
         position: relative;
+      }
+      .task-item.fade-in {
+        animation: fadeIn 0.15s ease;
       }
       .task-item:hover {
         background: var(--glass-hover);
@@ -1390,8 +1392,10 @@
               refNode = refNode.nextSibling;
             }
           } else {
-            // New element – insert it (it will get the fadeIn animation via CSS)
+            // New element – insert it with the fade-in animation
             const newEl = desiredMap.get(id);
+            newEl.classList.add("fade-in");
+            newEl.addEventListener("animationend", () => newEl.classList.remove("fade-in"), { once: true });
             container.insertBefore(newEl, refNode);
           }
         }
@@ -1533,7 +1537,14 @@
       doneListEl.addEventListener("dblclick", handleTaskDblClick);
 
       // ── FLIP animation helper ─────────────────────────────────────
+      // Returns a play() function.  Call it *after* the DOM has been
+      // mutated so it can read the new ("Last") positions and animate.
+      let _flipCleanups = [];          // tracks pending cleanup timers
       function flipAnimate(container, duration = 200) {
+        // Cancel any in-flight FLIP animations so they don't interfere
+        for (const fn of _flipCleanups) fn();
+        _flipCleanups = [];
+
         // "First" – snapshot current positions keyed by data-id
         const firstRects = new Map();
         for (const child of container.children) {
@@ -1541,26 +1552,50 @@
         }
 
         return function play() {
-          for (const child of container.children) {
+          const children = [...container.children];
+
+          // 1) Read all "Last" rects in one pass (pure reads)
+          const moves = [];
+          for (const child of children) {
             const id = child.dataset.id;
             const first = firstRects.get(id);
+            if (!first) continue;
             const last = child.getBoundingClientRect();
-            if (!first) continue; // newly inserted element, skip
             const dy = first.top - last.top;
-            if (Math.abs(dy) < 1) continue; // didn't move
+            if (Math.abs(dy) < 1) continue;
+            moves.push({ child, dy });
+          }
+
+          if (moves.length === 0) return;
+
+          // 2) Write all inverted transforms (no transition)
+          for (const { child, dy } of moves) {
             child.style.transition = "none";
             child.style.transform = `translateY(${dy}px)`;
-            // Force reflow so the transform is applied before we animate
-            child.offsetHeight; // eslint-disable-line no-unused-expressions
-            child.style.transition = `transform ${duration}ms ease`;
-            child.style.transform = "";
-            // Clean up after animation
-            const onEnd = () => {
-              child.style.transition = "";
-              child.removeEventListener("transitionend", onEnd);
-            };
-            child.addEventListener("transitionend", onEnd);
           }
+
+          // 3) Single forced reflow
+          void container.offsetHeight;
+
+          // 4) Enable transitions and clear transforms
+          for (const { child } of moves) {
+            child.style.transition = `transform ${duration}ms ease-in`;
+            child.style.transform = "";
+          }
+
+          // 5) Cleanup after animation
+          let cleaned = false;
+          const cleanup = () => {
+            if (cleaned) return;
+            cleaned = true;
+            for (const { child } of moves) {
+              child.style.transition = "";
+              child.style.transform = "";
+            }
+          };
+          const tid = setTimeout(cleanup, duration + 50);
+          _flipCleanups.push(() => { clearTimeout(tid); cleanup(); });
+          moves[0].child.addEventListener("transitionend", cleanup, { once: true });
         };
       }
 
@@ -1610,33 +1645,63 @@
       taskListEl.addEventListener("drop", (e) => {
         e.preventDefault();
         const droppedBelow = e.target.closest(".task-item.drag-over-bottom") !== null;
+        const dropItem = e.target.closest(".task-item");
+
+        // Clean up all drag visual state
         taskListEl.querySelectorAll(".task-item").forEach((el) => {
           el.classList.remove("drag-over-top");
           el.classList.remove("drag-over-bottom");
           el.classList.remove("dragging");
         });
 
-        const dropItem = e.target.closest(".task-item");
         if (!dropItem || dragSrcIdx === null) return;
         if (+dropItem.dataset.idx === dragSrcIdx) return;
 
-        // Snapshot positions before DOM update (FLIP "First")
+        // Find the actual dragged DOM node (by its data-id in the live DOM)
+        const draggedTaskId = tasks[dragSrcIdx].id;
+        const draggedEl = taskListEl.querySelector(`.task-item[data-id="${draggedTaskId}"]`);
+        if (!draggedEl) return;
+
+        // Force reflow so cleared .dragging is committed before snapshot
+        void taskListEl.offsetHeight;
+
+        // FLIP "First" – snapshot all children positions
         const playFlip = flipAnimate(taskListEl);
 
-        // Remove the dragged task from the array
+        // --- Direct DOM reorder (no reconciler) ---
+        if (droppedBelow) {
+          // Insert after the drop target
+          dropItem.after(draggedEl);
+        } else {
+          // Insert before the drop target
+          dropItem.before(draggedEl);
+        }
+
+        // --- Update the tasks array to match the new DOM order ---
         const [moved] = tasks.splice(dragSrcIdx, 1);
-        // Use the stable task id to find the drop target after splice
         const dropTaskId = +dropItem.dataset.id;
         const targetIdx = tasks.findIndex((t) => t.id === dropTaskId);
         const insertAt = droppedBelow ? targetIdx + 1 : targetIdx;
         tasks.splice(insertAt, 0, moved);
 
+        // --- Update data-idx and data-i attributes to reflect new indices ---
+        for (const child of taskListEl.children) {
+          const id = +child.dataset.id;
+          const newIdx = tasks.findIndex((t) => t.id === id);
+          child.dataset.idx = newIdx;
+          const chk = child.querySelector(".task-check");
+          if (chk) chk.dataset.i = newIdx;
+          const del = child.querySelector(".task-del");
+          if (del) del.dataset.i = newIdx;
+        }
+
         dragSrcIdx = null;
         saveTasks();
-        renderTasks();
 
-        // Animate to new positions (FLIP "Play")
+        // FLIP "Play" – animate elements from old positions to new
         playFlip();
+
+        requestResize();
       });
 
       taskListEl.addEventListener("dragend", () => {
