@@ -6,6 +6,25 @@ const {
   nativeTheme,
 } = require("electron");
 const path = require("path");
+const fs = require("fs");
+
+const STATE_PATH = path.join(app.getPath("userData"), "window-state.json");
+
+function loadState() {
+  try {
+    return JSON.parse(fs.readFileSync(STATE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveState(state) {
+  try {
+    fs.writeFileSync(STATE_PATH, JSON.stringify(state));
+  } catch {
+    // ignore write errors
+  }
+}
 
 let win;
 let tucked = false;
@@ -24,14 +43,35 @@ let currentHeight = MIN_HEIGHT;
 
 function createWindow() {
   const wa = screen.getPrimaryDisplay().workArea;
+  const saved = loadState();
 
   currentHeight = MIN_HEIGHT;
+
+  // Restore docked side from saved state
+  if (saved.dockedSide === "left" || saved.dockedSide === "right") {
+    dockedSide = saved.dockedSide;
+  }
+
+  // Compute initial X based on docked side
+  const startX = dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
+
+  // Restore Y position, or default to vertically centered
+  let startY;
+  if (typeof saved.y === "number") {
+    // Clamp to current work area bounds
+    startY = Math.max(
+      wa.y,
+      Math.min(saved.y, wa.y + wa.height - currentHeight),
+    );
+  } else {
+    startY = wa.y + Math.round((wa.height - currentHeight) / 2);
+  }
 
   win = new BrowserWindow({
     width: WIN_WIDTH,
     height: currentHeight,
-    x: wa.x + wa.width - WIN_WIDTH,
-    y: wa.y + Math.round((wa.height - currentHeight) / 2),
+    x: startX,
+    y: startY,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -49,12 +89,14 @@ function createWindow() {
   win.loadFile("index.html");
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Send initial theme to renderer once ready
+  // Send initial theme to renderer once ready, then auto-dock
   win.webContents.on("did-finish-load", () => {
     win.webContents.send(
       "system-theme",
       nativeTheme.shouldUseDarkColors ? "dark" : "light",
     );
+    // Auto-dock shortly after startup so the window appears briefly then tucks
+    setTimeout(() => tuck(), 600);
   });
 
   nativeTheme.on("updated", () => {
@@ -63,6 +105,14 @@ function createWindow() {
         "system-theme",
         nativeTheme.shouldUseDarkColors ? "dark" : "light",
       );
+  });
+
+  // Save position before the window is destroyed
+  win.on("close", () => {
+    if (win) {
+      const [, y] = win.getPosition();
+      saveState({ dockedSide, y });
+    }
   });
 
   win.on("closed", () => {
@@ -91,7 +141,13 @@ function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
 
     if (step >= steps) {
       clearInterval(interval);
-      if (win) win.setBounds({ x: toX, y: toY, width: WIN_WIDTH, height: currentHeight });
+      if (win)
+        win.setBounds({
+          x: toX,
+          y: toY,
+          width: WIN_WIDTH,
+          height: currentHeight,
+        });
       if (done) done();
     }
   }, 1000 / fps);
@@ -224,7 +280,12 @@ ipcMain.on("set-arrow-width", (_, wide) => {
     } else {
       targetX = wa.x - WIN_WIDTH + currentArrowTab;
     }
-    win.setBounds({ x: targetX, y: curY, width: WIN_WIDTH, height: currentHeight });
+    win.setBounds({
+      x: targetX,
+      y: curY,
+      width: WIN_WIDTH,
+      height: currentHeight,
+    });
   }
 });
 

@@ -982,9 +982,24 @@
 
       // ── Dynamic height ─────────────────────────────────────────────
       function requestResize() {
-        const panel = document.getElementById("panel");
-        const desired = panel.scrollHeight + 12;
-        window.electronAPI.resizeHeight(desired);
+        // Double-rAF ensures layout has fully settled after DOM mutations
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const panel = document.getElementById("panel");
+            // Sum the offsetHeight of each direct child for an accurate
+            // measurement that isn't inflated by stale scrollHeight values.
+            let h = 0;
+            for (const child of panel.children) {
+              h += child.offsetHeight;
+            }
+            // Account for panel's own vertical padding/border/margin
+            const style = getComputedStyle(panel);
+            h += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+            h += parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+            h += 12; // outer chrome (root margins, arrow strip, etc.)
+            window.electronAPI.resizeHeight(h);
+          });
+        });
       }
 
       // ── Tasks ──────────────────────────────────────────────────────
@@ -1001,7 +1016,7 @@
       if (doneWasOpen) doneSection.open = true;
       doneSection.addEventListener("toggle", () => {
         localStorage.setItem("pomo-done-open", doneSection.open);
-        requestAnimationFrame(requestResize);
+        requestResize();
       });
 
       function saveTasks() {
@@ -1056,7 +1071,7 @@
           });
         }
 
-        requestAnimationFrame(requestResize);
+        requestResize();
       }
 
       function escapeHtml(s) {
@@ -1315,7 +1330,7 @@
       updateTimerUI();
 
       // Initial resize
-      requestAnimationFrame(requestResize);
+      requestResize();
     </script>
   </body>
 </html>
