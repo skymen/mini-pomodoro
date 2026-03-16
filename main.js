@@ -46,7 +46,7 @@ function createWindow() {
     },
   });
 
-  win.loadFile("index.html");
+  win.loadFile(path.join(__dirname, "dist", "index.html"));
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   // Once the renderer is ready, restore saved position from localStorage,

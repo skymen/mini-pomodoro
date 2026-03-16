@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Pomodoro</title>
+  </head>
+  <body>
+    <div id="root">
+      <div id="panel">
+        <div id="header">
+          <button class="header-btn" id="settings-btn" title="Settings">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+          </button>
+          <span style="flex: 1"></span>
+          <button class="header-btn" id="close-btn" title="Close">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Settings panel (hidden by default) -->
+        <div id="settings-panel">
+          <div class="settings-title">Mini-pomodoro</div>
+
+          <div class="settings-group">
+            <div class="settings-group-label">Appearance</div>
+            <div class="settings-row">
+              <span style="font-size: 10px; color: var(--text)">Theme</span>
+              <div id="theme-picker">
+                <button class="theme-btn" data-theme="light">Light</button>
+                <button class="theme-btn" data-theme="dark">Dark</button>
+                <button class="theme-btn active" data-theme="auto">Auto</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-label">Behaviour</div>
+            <div class="settings-row">
+              <label for="keep-timer-toggle">Show timer when collapsed</label>
+              <input type="checkbox" class="toggle" id="keep-timer-toggle" />
+            </div>
+          </div>
+
+          <div class="credits">
+            made with
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="#ff2d2d"
+              xmlns="http://www.w3.org/2000/svg"
+              style="vertical-align: -2px"
+            >
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+              />
+            </svg>
+            by Ossama "skymen" Jouini<br />
+            <a href="https://github.com/skymen/mini-pomodoro" target="_blank"
+              >GitHub</a
+            >
+          </div>
+        </div>
+
+        <!-- Main content (timer + tasks) -->
+        <div id="main-content">
+          <div id="timer-section">
+            <div id="timer-top-row">
+              <div id="timer-ring-small">
+                <svg viewBox="0 0 48 48">
+                  <circle id="sm-ring-bg" cx="24" cy="24" r="20" />
+                  <circle
+                    id="sm-ring-progress"
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    stroke-dasharray="125.66"
+                    stroke-dashoffset="0"
+                  />
+                </svg>
+                <div class="timer-time" id="timer-display">25:00</div>
+              </div>
+              <div id="timer-info">
+                <span id="timer-phase">Focus</span>
+                <span id="timer-session-info">Session 1 / 4</span>
+              </div>
+              <div id="timer-controls">
+                <button class="t-btn" id="btn-play" title="Play/Pause">
+                  <svg
+                    id="icon-play"
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <svg
+                    id="icon-pause"
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    style="display: none"
+                  >
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
+                  </svg>
+                </button>
+                <button class="t-btn" id="btn-reset" title="Reset">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="1 4 1 10 7 10" />
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                </button>
+                <button class="t-btn" id="btn-skip" title="Skip">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <polygon points="5 4 15 12 5 20 5 4" />
+                    <line
+                      x1="19"
+                      y1="5"
+                      x2="19"
+                      y2="19"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="task-section">
+            <div id="task-input-row">
+              <input
+                id="task-input"
+                type="text"
+                placeholder="Add a task..."
+                autocomplete="off"
+              />
+              <button id="add-btn">+</button>
+            </div>
+            <div id="task-list"></div>
+            <details id="done-section">
+              <summary>
+                <svg
+                  class="chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span id="done-count">0 done</span>
+                <button id="clear-done-btn">clear all</button>
+              </summary>
+              <div id="done-list"></div>
+            </details>
+          </div>
+        </div>
+        <!-- /main-content -->
+      </div>
+
+      <div id="arrow-strip">
+        <div id="arrow-tab">
+          <svg
+            class="arrow-icon"
+            id="arrow-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </div>
+        <div id="mini-timer">
+          <svg id="mini-timer-ring" viewBox="0 0 24 24">
+            <circle id="mini-ring-bg" cx="12" cy="12" r="9" />
+            <circle
+              id="mini-ring-progress"
+              cx="12"
+              cy="12"
+              r="9"
+              stroke-dasharray="56.55"
+              stroke-dashoffset="0"
+            />
+          </svg>
+          <span id="mini-timer-text">25:00</span>
+        </div>
+      </div>
+    </div>
+
+    <audio id="snd-add" src="/assets/task-add.aac" preload="auto"></audio>
+    <audio
+      id="snd-checked"
+      src="/assets/task-checked.aac"
+      preload="auto"
+    ></audio>
+    <audio
+      id="snd-unchecked"
+      src="/assets/task-unchecked.aac"
+      preload="auto"
+    ></audio>
+    <audio id="snd-timer-end" src="/assets/timer-end.aac" preload="auto"></audio>
+
+    <script type="module" src="/renderer.js"></script>
+  </body>
+</html>

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "start": "npm run build && electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +13,10 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "electron": "^41.0.2"
+    "electron": "^41.0.2",
+    "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.7"
   }
 }
