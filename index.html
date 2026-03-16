@@ -675,6 +675,24 @@
       #done-section summary:hover {
         color: var(--text-dim);
       }
+      #clear-done-btn {
+        margin-left: auto;
+        font-size: 9px;
+        color: var(--text-faint);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 1px 4px;
+        border-radius: 3px;
+        opacity: 0;
+        transition: opacity 0.15s, color 0.15s;
+      }
+      #done-section summary:hover #clear-done-btn {
+        opacity: 1;
+      }
+      #clear-done-btn:hover {
+        color: var(--accent);
+      }
       #done-section summary::-webkit-details-marker {
         display: none;
       }
@@ -956,6 +974,7 @@
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
                 <span id="done-count">0 done</span>
+                <button id="clear-done-btn">clear all</button>
               </summary>
               <div id="done-list"></div>
             </details>
@@ -1186,7 +1205,17 @@
       const doneSection = document.getElementById("done-section");
       const doneListEl = document.getElementById("done-list");
       const doneCountEl = document.getElementById("done-count");
+      const clearDoneBtn = document.getElementById("clear-done-btn");
       let tasks = JSON.parse(localStorage.getItem("pomo-tasks") || "[]");
+
+      clearDoneBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        tasks = tasks.filter((t) => !t.done);
+        saveTasks();
+        renderTasks();
+        requestResize();
+      });
 
       // Track collapsed state for done section
       const doneWasOpen = localStorage.getItem("pomo-done-open") === "true";
