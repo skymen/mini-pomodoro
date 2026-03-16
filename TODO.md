@@ -1,0 +1,5 @@
+- Make it work on multiple screens
+- Use new sounds by q1 for end of timer alarm (1 for end of break and 2 for end of timer)
+- Allow setting a custom accent color (and reseting to default)
+- Allow making it so the arrow/clock are accent themed or not
+- show the app at the end of the timer with a little flash on the clock area
