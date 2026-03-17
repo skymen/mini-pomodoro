@@ -52,7 +52,6 @@ Mini Pomodoro is a translucent desktop widget that docks to the edge of your scr
 - **Pomodoro timer** — configurable focus/break durations with session tracking
 - **Inline task list** — add, reorder (drag-and-drop), edit, and check off tasks
 - **Satisfying feedback** — subtle sounds and smooth animations for every interaction
-- **Translucent glass UI** — backdrop-blurred panel that blends with your desktop
 - **Dark & light themes** — follows your system preference, or pick manually
 
 ---
