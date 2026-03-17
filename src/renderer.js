@@ -1264,5 +1264,15 @@ document.getElementById("btn-reset-sessions").addEventListener("click", () => {
 
 updateTimerUI();
 
+// ── Scroll-triggered scrollbar visibility ───────────────────────
+[taskListEl, doneListEl, settingsPanel].forEach((el) => {
+  let scrollTimer;
+  el.addEventListener("scroll", () => {
+    el.classList.add("scrolling");
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => el.classList.remove("scrolling"), 800);
+  });
+});
+
 // Initial resize
 requestResize();

@@ -662,20 +662,22 @@ body {
 }
 
 #task-list::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 #task-list::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s;
 }
 #task-list::-webkit-scrollbar-track {
   background: transparent;
 }
-#task-list:hover::-webkit-scrollbar {
-  width: 6px;
-}
-#task-list:hover::-webkit-scrollbar-thumb {
-  background: var(--accent);
+#task-list.scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .task-item {
@@ -947,20 +949,22 @@ body {
   max-height: 150px;
 }
 #done-list::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 #done-list::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s;
 }
 #done-list::-webkit-scrollbar-track {
   background: transparent;
 }
-#done-list:hover::-webkit-scrollbar {
-  width: 6px;
-}
-#done-list:hover::-webkit-scrollbar-thumb {
-  background: var(--accent);
+#done-list.scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 /* ── Settings panel (overlay) ─────────────────────────────────── */
@@ -973,20 +977,22 @@ body {
   overflow-y: auto;
 }
 #settings-panel::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 #settings-panel::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s;
 }
 #settings-panel::-webkit-scrollbar-track {
   background: transparent;
 }
-#settings-panel:hover::-webkit-scrollbar {
-  width: 6px;
-}
-#settings-panel:hover::-webkit-scrollbar-thumb {
-  background: var(--accent);
+#settings-panel.scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 #settings-panel.open {
   display: flex;
