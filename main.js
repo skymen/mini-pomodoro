@@ -64,20 +64,27 @@ function createWindow() {
       );
       if (json) {
         const saved = JSON.parse(json);
-        const wa = screen.getPrimaryDisplay().workArea;
 
         if (saved.dockedSide === "left" || saved.dockedSide === "right") {
           dockedSide = saved.dockedSide;
         }
 
+        // Determine which display to restore onto using saved coordinates
+        const savedX = typeof saved.x === "number" ? saved.x : undefined;
+        const savedY = typeof saved.y === "number" ? saved.y : undefined;
+        const wa =
+          savedX !== undefined && savedY !== undefined
+            ? getWorkAreaForPoint(savedX, savedY)
+            : screen.getPrimaryDisplay().workArea;
+
         const startX =
           dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
 
         let startY;
-        if (typeof saved.y === "number") {
+        if (savedY !== undefined) {
           startY = Math.max(
             wa.y,
-            Math.min(saved.y, wa.y + wa.height - currentHeight),
+            Math.min(savedY, wa.y + wa.height - currentHeight),
           );
         } else {
           startY = wa.y + Math.round((wa.height - currentHeight) / 2);
@@ -114,8 +121,8 @@ function createWindow() {
   // Save position to renderer localStorage before the window is destroyed
   win.on("close", () => {
     if (win) {
-      const [, y] = win.getPosition();
-      const state = JSON.stringify({ dockedSide, y });
+      const [x, y] = win.getPosition();
+      const state = JSON.stringify({ dockedSide, x, y });
       win.webContents
         .executeJavaScript(
           `localStorage.setItem("pomo-window-state", ${JSON.stringify(state)})`,
@@ -132,7 +139,15 @@ function createWindow() {
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function getWorkArea() {
+  if (win) {
+    const bounds = win.getBounds();
+    return screen.getDisplayMatching(bounds).workArea;
+  }
   return screen.getPrimaryDisplay().workArea;
+}
+
+function getWorkAreaForPoint(x, y) {
+  return screen.getDisplayNearestPoint({ x, y }).workArea;
 }
 
 function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
@@ -173,9 +188,16 @@ function snapToEdge() {
   } else {
     targetX = wa.x;
   }
+
+  // Clamp Y to the current display's work area
+  const targetY = Math.max(
+    wa.y,
+    Math.min(curY, wa.y + wa.height - currentHeight),
+  );
+
   notifyDockedSide();
 
-  lerpAnimate(curX, curY, targetX, curY, 300, () => {
+  lerpAnimate(curX, curY, targetX, targetY, 300, () => {
     tucked = false;
   });
 }
@@ -247,9 +269,15 @@ ipcMain.on("mouse-leave", () => {
 });
 
 ipcMain.on("drag-end", (_, { x, y }) => {
-  const wa = getWorkArea();
+  // Use the display where the window was dropped, not the primary display
+  const wa = getWorkAreaForPoint(x + WIN_WIDTH / 2, y);
   const center = x + WIN_WIDTH / 2;
   dockedSide = center > wa.x + wa.width / 2 ? "right" : "left";
+
+  // Move the window to the dropped display first so getWorkArea() picks it up
+  if (win) {
+    win.setBounds({ x, y, width: WIN_WIDTH, height: currentHeight });
+  }
   snapToEdge();
 });
 
