@@ -161,9 +161,9 @@ accentArrowToggle.checked =
 
 function applyAccentArrow() {
   if (accentArrowToggle.checked) {
-    rootEl.classList.remove("accent-arrow");
-  } else {
     rootEl.classList.add("accent-arrow");
+  } else {
+    rootEl.classList.remove("accent-arrow");
   }
 }
 
