@@ -122,15 +122,13 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 
 The app docks to whichever screen edge you drag it to and tucks itself away automatically:
 
-<p align="center">
-  <video src="assets/show docking.mp4" width="260" autoplay loop muted playsinline></video>
-</p>
+https://github.com/user-attachments/assets/6ea1fc22-e2af-4d66-8183-d38691d61b90
 
 #### Interaction area
 
 The interaction area setting lets you control exactly how much of the collapsed strip reacts to your cursor:
 
-[video]("assets/show interaction.mp4")
+https://github.com/user-attachments/assets/1d947138-4f11-4b66-b0db-db820b02cc9e
 
 ---
 
