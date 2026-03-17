@@ -659,25 +659,12 @@ body {
   gap: 0;
   overflow-y: auto;
   max-height: 200px;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+  transition: scrollbar-color 0.3s;
 }
-
-#task-list::-webkit-scrollbar {
-  width: 8px;
-}
-#task-list::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 8px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.3s;
-}
-#task-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-#task-list.scrolling::-webkit-scrollbar-thumb {
-  background-color: var(--accent);
-  border: 3px solid transparent;
-  background-clip: padding-box;
+#task-list.scrolling {
+  scrollbar-color: var(--accent) transparent;
 }
 
 .task-item {
@@ -947,24 +934,12 @@ body {
   padding-top: 2px;
   overflow-y: auto;
   max-height: 150px;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+  transition: scrollbar-color 0.3s;
 }
-#done-list::-webkit-scrollbar {
-  width: 8px;
-}
-#done-list::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 8px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.3s;
-}
-#done-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-#done-list.scrolling::-webkit-scrollbar-thumb {
-  background-color: var(--accent);
-  border: 3px solid transparent;
-  background-clip: padding-box;
+#done-list.scrolling {
+  scrollbar-color: var(--accent) transparent;
 }
 
 /* ── Settings panel (overlay) ─────────────────────────────────── */
@@ -975,24 +950,12 @@ body {
   gap: 14px;
   flex: 1;
   overflow-y: auto;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+  transition: scrollbar-color 0.3s;
 }
-#settings-panel::-webkit-scrollbar {
-  width: 8px;
-}
-#settings-panel::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 8px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.3s;
-}
-#settings-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-#settings-panel.scrolling::-webkit-scrollbar-thumb {
-  background-color: var(--accent);
-  border: 3px solid transparent;
-  background-clip: padding-box;
+#settings-panel.scrolling {
+  scrollbar-color: var(--accent) transparent;
 }
 #settings-panel.open {
   display: flex;
