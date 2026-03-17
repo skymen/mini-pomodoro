@@ -1,2 +1,1 @@
 - Make it work on multiple screens
-- show the app at the end of the timer with a little flash on the clock area

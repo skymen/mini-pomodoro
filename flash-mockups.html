@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timer Flash Animation Mockups</title>
+  <style>
+    :root {
+      --glass: rgba(12, 12, 14, 1.0);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text: rgba(255, 255, 255, 0.85);
+      --text-dim: rgba(255, 255, 255, 0.4);
+      --text-faint: rgba(255, 255, 255, 0.2);
+      --accent: #ff2d2d;
+      --accent-fg: #fff;
+      --btn-bg: rgba(255, 255, 255, 0.05);
+      --btn-bg-hover: rgba(255, 255, 255, 0.1);
+      --radius: 14px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      background: #1a1a1a;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      gap: 50px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+    h1 span { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .mockup-header {
+      text-align: center;
+    }
+    .mockup-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .mockup-header p {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Simulated panel */
+    .panel {
+      width: 290px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .timer-ring {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+    }
+    .timer-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-bg { fill: none; stroke: var(--text-faint); stroke-width: 3; }
+    .ring-progress { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+    .timer-time {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 600; color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+    .timer-phase { font-size: 11px; font-weight: 600; color: var(--text); }
+    .timer-session { font-size: 9px; color: var(--text-dim); }
+
+    .trigger-btn {
+      padding: 6px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 10px;
+      font-family: var(--font);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .trigger-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .separator {
+      width: 100%;
+      max-width: 340px;
+      height: 1px;
+      background: var(--glass-border);
+    }
+
+    /* ===== MOCKUP 1: Full-panel border glow ===== */
+    @keyframes panel-glow {
+      0%   { box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent; }
+      12%  { box-shadow: 0 0 25px 4px var(--accent), inset 0 0 15px 0 rgba(255, 45, 45, 0.08); }
+      30%  { box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent; }
+      42%  { box-shadow: 0 0 20px 3px var(--accent), inset 0 0 12px 0 rgba(255, 45, 45, 0.06); }
+      60%  { box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent; }
+      72%  { box-shadow: 0 0 12px 2px var(--accent), inset 0 0 8px 0 rgba(255, 45, 45, 0.04); }
+      100% { box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent; }
+    }
+    @keyframes panel-border-flash {
+      0%   { border-color: var(--glass-border); }
+      12%  { border-color: var(--accent); }
+      30%  { border-color: var(--glass-border); }
+      42%  { border-color: var(--accent); }
+      60%  { border-color: var(--glass-border); }
+      72%  { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+      100% { border-color: var(--glass-border); }
+    }
+    .panel.flash-panel-glow {
+      animation: panel-glow 1.6s ease-out, panel-border-flash 1.6s ease-out;
+    }
+
+    /* ===== MOCKUP 2: Ring scale pulse + color burst ===== */
+    @keyframes ring-pulse {
+      0%   { transform: scale(1); }
+      10%  { transform: scale(1.35); }
+      25%  { transform: scale(1); }
+      35%  { transform: scale(1.2); }
+      50%  { transform: scale(1); }
+      60%  { transform: scale(1.1); }
+      75%  { transform: scale(1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes ring-color-burst {
+      0%   { filter: drop-shadow(0 0 0 transparent); }
+      10%  { filter: drop-shadow(0 0 8px var(--accent)); }
+      25%  { filter: drop-shadow(0 0 0 transparent); }
+      35%  { filter: drop-shadow(0 0 6px var(--accent)); }
+      50%  { filter: drop-shadow(0 0 0 transparent); }
+      100% { filter: drop-shadow(0 0 0 transparent); }
+    }
+    .timer-ring.flash-ring-pulse {
+      animation: ring-pulse 1.4s ease-out, ring-color-burst 1.4s ease-out;
+    }
+
+    /* ===== MOCKUP 3: Radial ripple ===== */
+    .panel-3 { overflow: visible; }
+    .ripple-origin {
+      position: relative;
+    }
+    .ripple-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      border: 2px solid var(--accent);
+      opacity: 0;
+      pointer-events: none;
+    }
+    @keyframes ripple-expand {
+      0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2.5px; }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; border-width: 0.5px; }
+    }
+    .ripple-ring.animate {
+      animation: ripple-expand 0.9s ease-out forwards;
+    }
+    /* Subtle glow on the ring itself during ripple */
+    @keyframes ring-glow-subtle {
+      0%   { filter: drop-shadow(0 0 0 transparent); }
+      15%  { filter: drop-shadow(0 0 6px var(--accent)); }
+      40%  { filter: drop-shadow(0 0 3px var(--accent)); }
+      100% { filter: drop-shadow(0 0 0 transparent); }
+    }
+    .timer-ring.flash-ripple-glow {
+      animation: ring-glow-subtle 1.2s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <h1>Timer Flash Mockups <span>— click "Trigger" to preview each</span></h1>
+
+  <!-- ── Mockup 1: Full-panel border glow ──────────────────────── -->
+  <div class="mockup-section">
+    <div class="mockup-header">
+      <h2>1. Full-panel glow</h2>
+      <p>
+        Instead of flashing just the tiny 38px ring, the entire panel pulses
+        with an outer glow and subtle inner light in the accent color. The
+        panel border also flashes. This is far more noticeable, especially
+        when the app is docked at the screen edge.
+      </p>
+    </div>
+    <div class="panel" id="panel-1">
+      <div class="timer-ring">
+        <svg viewBox="0 0 48 48">
+          <circle class="ring-bg" cx="24" cy="24" r="20" />
+          <circle class="ring-progress" cx="24" cy="24" r="20"
+                  stroke-dasharray="125.66" stroke-dashoffset="0" />
+        </svg>
+        <div class="timer-time">00:00</div>
+      </div>
+      <div class="timer-info">
+        <span class="timer-phase">Focus</span>
+        <span class="timer-session">Session 4 / 4</span>
+      </div>
+    </div>
+    <button class="trigger-btn" onclick="triggerFlash1()">Trigger</button>
+  </div>
+
+  <div class="separator"></div>
+
+  <!-- ── Mockup 2: Ring scale pulse + color burst ─────────────── -->
+  <div class="mockup-section">
+    <div class="mockup-header">
+      <h2>2. Ring scale pulse</h2>
+      <p>
+        The timer ring itself bounces up in size with a colored drop-shadow
+        burst, then settles back with diminishing bounces. Draws the eye to
+        the timer element directly while feeling more dynamic and playful
+        than a static glow.
+      </p>
+    </div>
+    <div class="panel" id="panel-2">
+      <div class="timer-ring" id="ring-2">
+        <svg viewBox="0 0 48 48">
+          <circle class="ring-bg" cx="24" cy="24" r="20" />
+          <circle class="ring-progress" cx="24" cy="24" r="20"
+                  stroke-dasharray="125.66" stroke-dashoffset="0" />
+        </svg>
+        <div class="timer-time">00:00</div>
+      </div>
+      <div class="timer-info">
+        <span class="timer-phase">Break</span>
+        <span class="timer-session">Session 2 / 4</span>
+      </div>
+    </div>
+    <button class="trigger-btn" onclick="triggerFlash2()">Trigger</button>
+  </div>
+
+  <div class="separator"></div>
+
+  <!-- ── Mockup 3: Radial ripple ──────────────────────────────── -->
+  <div class="mockup-section">
+    <div class="mockup-header">
+      <h2>3. Radial ripple</h2>
+      <p>
+        Two staggered ripple rings expand outward from the timer circle,
+        like a water-drop effect. Combined with a subtle glow on the ring
+        itself, this creates a satisfying "ping" sensation. Works well for
+        both focus-end and break-end events.
+      </p>
+    </div>
+    <div class="panel panel-3" id="panel-3">
+      <div class="timer-ring ripple-origin" id="ring-3">
+        <svg viewBox="0 0 48 48">
+          <circle class="ring-bg" cx="24" cy="24" r="20" />
+          <circle class="ring-progress" cx="24" cy="24" r="20"
+                  stroke-dasharray="125.66" stroke-dashoffset="0" />
+        </svg>
+        <div class="timer-time">00:00</div>
+        <!-- Ripple rings injected here by JS -->
+      </div>
+      <div class="timer-info">
+        <span class="timer-phase">Focus</span>
+        <span class="timer-session">Session 1 / 4</span>
+      </div>
+    </div>
+    <button class="trigger-btn" onclick="triggerFlash3()">Trigger</button>
+  </div>
+
+  <script>
+    /* Mockup 1: Full-panel glow */
+    function triggerFlash1() {
+      const el = document.getElementById("panel-1");
+      el.classList.remove("flash-panel-glow");
+      void el.offsetWidth;
+      el.classList.add("flash-panel-glow");
+      el.addEventListener("animationend", () => el.classList.remove("flash-panel-glow"), { once: true });
+    }
+
+    /* Mockup 2: Ring scale pulse */
+    function triggerFlash2() {
+      const el = document.getElementById("ring-2");
+      el.classList.remove("flash-ring-pulse");
+      void el.offsetWidth;
+      el.classList.add("flash-ring-pulse");
+      el.addEventListener("animationend", () => el.classList.remove("flash-ring-pulse"), { once: true });
+    }
+
+    /* Mockup 3: Radial ripple */
+    function triggerFlash3() {
+      const origin = document.getElementById("ring-3");
+
+      // Glow on the ring
+      origin.classList.remove("flash-ripple-glow");
+      void origin.offsetWidth;
+      origin.classList.add("flash-ripple-glow");
+      origin.addEventListener("animationend", () => origin.classList.remove("flash-ripple-glow"), { once: true });
+
+      // Spawn two staggered ripple rings
+      [0, 200].forEach((delay) => {
+        setTimeout(() => {
+          const ring = document.createElement("div");
+          ring.className = "ripple-ring animate";
+          origin.appendChild(ring);
+          ring.addEventListener("animationend", () => ring.remove(), { once: true });
+        }, delay);
+      });
+    }
+  </script>
+</body>
+</html>

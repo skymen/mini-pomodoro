@@ -357,18 +357,30 @@ body {
   stroke: var(--accent);
 }
 
-/* ── Timer-end flash animation ───────────────────────────────── */
-@keyframes timer-flash {
-  0% { box-shadow: inset 0 0 0 0 transparent; }
-  15% { box-shadow: inset 0 0 20px 4px var(--accent); }
-  30% { box-shadow: inset 0 0 0 0 transparent; }
-  45% { box-shadow: inset 0 0 20px 4px var(--accent); }
-  60% { box-shadow: inset 0 0 0 0 transparent; }
-  75% { box-shadow: inset 0 0 14px 2px var(--accent); }
-  100% { box-shadow: inset 0 0 0 0 transparent; }
+/* ── Timer-end flash animation (radial ripple) ──────────────── */
+@keyframes ripple-expand {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.8; border-width: 2.5px; }
+  100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; border-width: 0.5px; }
+}
+@keyframes ring-glow-subtle {
+  0%   { filter: drop-shadow(0 0 0 transparent); }
+  15%  { filter: drop-shadow(0 0 6px var(--accent)); }
+  40%  { filter: drop-shadow(0 0 3px var(--accent)); }
+  100% { filter: drop-shadow(0 0 0 transparent); }
+}
+.ripple-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  border: 2px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  animation: ripple-expand 0.9s ease-out forwards;
 }
 #timer-ring-small.flash {
-  animation: timer-flash 1.2s ease-out;
+  animation: ring-glow-subtle 1.2s ease-out;
 }
 
 /* ── Toggle switch ─────────────────────────────────────────── */
@@ -466,6 +478,7 @@ body {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 #timer-ring-small svg {
@@ -544,6 +557,44 @@ body {
 #btn-play.playing {
   background: var(--accent);
   color: var(--accent-fg);
+}
+
+/* ── Congratulations overlay ─────────────────────────────────── */
+#congrats-overlay {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 12px;
+  gap: 6px;
+  text-align: center;
+}
+#congrats-overlay.visible {
+  display: flex;
+}
+#congrats-icon {
+  margin-bottom: 2px;
+}
+#congrats-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+#congrats-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+#congrats-dismiss {
+  margin-top: 6px;
+  width: auto;
+  padding: 4px 14px;
+  font-size: 9px;
+  font-family: var(--font);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 5px;
 }
 
 /* ── Task section ─────────────────────────────────────────────── */

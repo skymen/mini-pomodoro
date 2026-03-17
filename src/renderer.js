@@ -272,6 +272,7 @@ function isInInteractionArea(e) {
 }
 
 function sendMouseEnter() {
+  clearTimeout(autoHideTimeout);
   window.electronAPI.mouseEnter();
 }
 
@@ -479,6 +480,10 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   keepTimerToggle.checked = false;
   localStorage.removeItem("pomo-keep-timer");
   updateMiniTimerVisibility();
+
+  // Auto-hide after timer alert
+  autoHideToggle.checked = false;
+  localStorage.removeItem("pomo-auto-hide");
 
   // Undock mode
   undockMode = "hover";
@@ -945,14 +950,24 @@ const MINI_CIRCUMFERENCE = 2 * Math.PI * 9;
 
 const timerRingSmall = document.getElementById("timer-ring-small");
 
+let autoHideTimeout = null;
+
 function flashTimerRing() {
   // Show the app if tucked
   if (isTucked) {
     window.electronAPI.mouseEnter();
+
+    // Auto-hide after a delay if the setting is enabled
+    if (autoHideToggle.checked) {
+      clearTimeout(autoHideTimeout);
+      autoHideTimeout = setTimeout(() => {
+        window.electronAPI.mouseLeave();
+      }, 5000);
+    }
   }
-  // Add flash animation to the clock ring area
+
+  // Glow on the ring element
   timerRingSmall.classList.remove("flash");
-  // Force reflow so the animation restarts
   void timerRingSmall.offsetWidth;
   timerRingSmall.classList.add("flash");
   timerRingSmall.addEventListener(
@@ -960,6 +975,16 @@ function flashTimerRing() {
     () => timerRingSmall.classList.remove("flash"),
     { once: true },
   );
+
+  // Spawn two staggered ripple rings
+  [0, 200].forEach((delay) => {
+    setTimeout(() => {
+      const ring = document.createElement("div");
+      ring.className = "ripple-ring";
+      timerRingSmall.appendChild(ring);
+      ring.addEventListener("animationend", () => ring.remove(), { once: true });
+    }, delay);
+  });
 }
 
 const miniRingProgress = document.getElementById("mini-ring-progress");
@@ -970,6 +995,13 @@ keepTimerToggle.checked = localStorage.getItem("pomo-keep-timer") === "true";
 keepTimerToggle.addEventListener("change", () => {
   localStorage.setItem("pomo-keep-timer", keepTimerToggle.checked);
   updateMiniTimerVisibility();
+});
+
+// ── Auto-hide after timer alert ───────────────────────────────
+const autoHideToggle = document.getElementById("auto-hide-toggle");
+autoHideToggle.checked = localStorage.getItem("pomo-auto-hide") === "true";
+autoHideToggle.addEventListener("change", () => {
+  localStorage.setItem("pomo-auto-hide", autoHideToggle.checked);
 });
 
 // ── Timer duration settings ───────────────────────────────────
@@ -1125,6 +1157,7 @@ function tick() {
 
 function onPhaseEnd() {
   if (!isBreak) {
+    // Focus phase ended: auto-complete the first incomplete task
     const idx = tasks.findIndex((t) => !t.done);
     if (idx !== -1) {
       tasks[idx].done = true;
@@ -1134,6 +1167,12 @@ function onPhaseEnd() {
     isBreak = true;
     totalSeconds = (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
   } else {
+    // Break phase ended
+    if (session % SESSIONS === 0) {
+      // Long break just ended — all sessions complete
+      showCongrats();
+      return;
+    }
     isBreak = false;
     session++;
     totalSeconds = FOCUS_MINS * 60;
@@ -1142,6 +1181,26 @@ function onPhaseEnd() {
   updateTimerUI();
   startTimer();
 }
+
+// ── Congratulations overlay ───────────────────────────────────
+const congratsOverlay = document.getElementById("congrats-overlay");
+
+function showCongrats() {
+  congratsOverlay.classList.add("visible");
+  requestResize();
+}
+
+function dismissCongrats() {
+  congratsOverlay.classList.remove("visible");
+  session = 1;
+  isBreak = false;
+  totalSeconds = FOCUS_MINS * 60;
+  remaining = totalSeconds;
+  updateTimerUI();
+  requestResize();
+}
+
+document.getElementById("congrats-dismiss").addEventListener("click", dismissCongrats);
 
 function startTimer() {
   if (running) return;
@@ -1174,6 +1233,19 @@ btnSkip.addEventListener("click", () => {
   pauseTimer();
   remaining = 0;
   onPhaseEnd();
+});
+
+document.getElementById("btn-reset-sessions").addEventListener("click", () => {
+  pauseTimer();
+  if (congratsOverlay.classList.contains("visible")) {
+    dismissCongrats();
+  } else {
+    session = 1;
+    isBreak = false;
+    totalSeconds = FOCUS_MINS * 60;
+    remaining = totalSeconds;
+    updateTimerUI();
+  }
 });
 
 updateTimerUI();
