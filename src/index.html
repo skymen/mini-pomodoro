@@ -57,6 +57,17 @@
                 <button class="theme-btn active" data-theme="auto">Auto</button>
               </div>
             </div>
+            <div class="settings-row">
+              <span style="font-size: 10px; color: var(--text)">Accent color</span>
+              <div id="accent-picker">
+                <input type="color" id="accent-color-input" value="#ff2d2d" title="Choose accent color" />
+                <button id="accent-reset-btn" class="theme-btn" title="Reset to default">Reset</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <label for="accent-arrow-toggle">Accent-themed arrow &amp; clock</label>
+              <input type="checkbox" class="toggle" id="accent-arrow-toggle" />
+            </div>
           </div>
 
           <div class="settings-group">
@@ -64,6 +75,21 @@
             <div class="settings-row">
               <label for="keep-timer-toggle">Show timer when collapsed</label>
               <input type="checkbox" class="toggle" id="keep-timer-toggle" />
+            </div>
+            <div class="settings-row">
+              <span style="font-size: 10px; color: var(--text)">Undock on</span>
+              <div id="undock-picker">
+                <button class="theme-btn active" data-undock="hover">Hover</button>
+                <button class="theme-btn" data-undock="click">Click</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <span style="font-size: 10px; color: var(--text)">Interaction area</span>
+              <div id="area-picker">
+                <button class="theme-btn active" data-area="full">Full</button>
+                <button class="theme-btn" data-area="smaller">Smaller</button>
+                <button class="theme-btn" data-area="arrow">Arrow</button>
+              </div>
             </div>
           </div>
 
@@ -207,6 +233,7 @@
       </div>
 
       <div id="arrow-strip">
+        <div id="arrow-strip-edge"></div>
         <div id="arrow-tab">
           <svg
             class="arrow-icon"
@@ -250,6 +277,8 @@
       preload="auto"
     ></audio>
     <audio id="snd-timer-end" src="/assets/timer-end.aac" preload="auto"></audio>
+    <audio id="snd-break-end" src="/assets/1.wav" preload="auto"></audio>
+    <audio id="snd-focus-end" src="/assets/2.wav" preload="auto"></audio>
 
     <script type="module" src="/renderer.js"></script>
   </body>

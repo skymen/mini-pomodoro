@@ -83,17 +83,24 @@ function createWindow() {
           startY = wa.y + Math.round((wa.height - currentHeight) / 2);
         }
 
-        win.setBounds({ x: startX, y: startY, width: WIN_WIDTH, height: currentHeight });
-        notifyDockedSide();
+        win.setBounds({
+          x: startX,
+          y: startY,
+          width: WIN_WIDTH,
+          height: currentHeight,
+        });
       }
     } catch {
       // First launch or corrupt data — use defaults
     }
 
+    // Always notify the renderer of the (possibly restored) docked side
+    notifyDockedSide();
+
     win.show();
 
     // Auto-dock shortly after startup so the window appears briefly then tucks
-    setTimeout(() => tuck(), 600);
+    //setTimeout(() => tuck(), 600);
   });
 
   nativeTheme.on("updated", () => {
@@ -109,9 +116,11 @@ function createWindow() {
     if (win) {
       const [, y] = win.getPosition();
       const state = JSON.stringify({ dockedSide, y });
-      win.webContents.executeJavaScript(
-        `localStorage.setItem("pomo-window-state", ${JSON.stringify(state)})`,
-      ).catch(() => {});
+      win.webContents
+        .executeJavaScript(
+          `localStorage.setItem("pomo-window-state", ${JSON.stringify(state)})`,
+        )
+        .catch(() => {});
     }
   });
 

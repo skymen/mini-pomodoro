@@ -85,6 +85,27 @@ body {
   justify-content: center;
   position: relative;
   padding-top: 52px;
+  cursor: grab;
+}
+#arrow-strip:active {
+  cursor: grabbing;
+}
+
+/* Narrow interaction strip for "smaller" interaction-area mode */
+#arrow-strip-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 1;
+  background: var(--text-faint);
+  border-radius: 1px;
+}
+#root.dock-left #arrow-strip-edge {
+  left: 0;
+}
+#root:not(.dock-left) #arrow-strip-edge {
+  right: 0;
 }
 
 #arrow-tab {
@@ -238,6 +259,87 @@ body {
 }
 .header-btn.active {
   color: var(--accent);
+}
+
+/* ── Accent color picker ──────────────────────────────────────── */
+#accent-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#accent-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+#accent-color-input::-webkit-color-swatch-wrapper {
+  padding: 1px;
+}
+#accent-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+/* ── Accent-themed arrow & clock ─────────────────────────────── */
+#root.accent-arrow #arrow-tab .arrow-icon {
+  color: var(--accent);
+}
+#root.accent-arrow #arrow-tab {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+}
+#root.accent-arrow:not(.dock-left) #arrow-tab {
+  border-right: none;
+}
+#root.accent-arrow.dock-left #arrow-tab {
+  border-left: none;
+}
+#root.accent-arrow #mini-timer {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+}
+#root.accent-arrow:not(.dock-left) #mini-timer {
+  border-right: none;
+}
+#root.accent-arrow.dock-left #mini-timer {
+  border-left: none;
+}
+#root.accent-arrow #mini-ring-bg {
+  stroke: var(--text-faint);
+}
+#root.accent-arrow #mini-ring-progress {
+  stroke: var(--accent);
+}
+#root.accent-arrow #mini-timer-text {
+  color: var(--text);
+}
+#root.accent-arrow #sm-ring-progress {
+  stroke: var(--accent);
+}
+
+/* ── Timer-end flash animation ───────────────────────────────── */
+@keyframes timer-flash {
+  0% { box-shadow: inset 0 0 0 0 transparent; }
+  15% { box-shadow: inset 0 0 20px 4px var(--accent); }
+  30% { box-shadow: inset 0 0 0 0 transparent; }
+  45% { box-shadow: inset 0 0 20px 4px var(--accent); }
+  60% { box-shadow: inset 0 0 0 0 transparent; }
+  75% { box-shadow: inset 0 0 14px 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 0 transparent; }
+}
+#timer-ring-small.flash {
+  animation: timer-flash 1.2s ease-out;
 }
 
 /* ── Toggle switch ─────────────────────────────────────────── */
@@ -826,4 +928,27 @@ body {
 /* hide main content when settings is open */
 #main-content.hidden {
   display: none;
+}
+
+/* ── Undock & Interaction-area pickers ─────────────────────────── */
+#undock-picker,
+#area-picker {
+  display: flex;
+  gap: 2px;
+}
+
+/* ── Interaction area flash ───────────────────────────────────── */
+@keyframes area-flash {
+  0%   { box-shadow: inset 0 0 0 0 transparent; }
+  20%  { box-shadow: inset 0 0 12px 3px rgba(255, 0, 0, 0.7); }
+  40%  { box-shadow: inset 0 0 0 0 transparent; }
+  60%  { box-shadow: inset 0 0 12px 3px rgba(255, 0, 0, 0.7); }
+  80%  { box-shadow: inset 0 0 0 0 transparent; }
+  100% { box-shadow: inset 0 0 0 0 transparent; }
+}
+.area-flash-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  animation: area-flash 1s ease-out forwards;
 }

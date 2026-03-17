@@ -6,6 +6,8 @@ const sndAdd = document.getElementById("snd-add");
 const sndChecked = document.getElementById("snd-checked");
 const sndUnchecked = document.getElementById("snd-unchecked");
 const sndTimerEnd = document.getElementById("snd-timer-end");
+const sndBreakEnd = document.getElementById("snd-break-end");
+const sndFocusEnd = document.getElementById("snd-focus-end");
 
 function playSound(audio) {
   audio.currentTime = 0;
@@ -23,13 +25,16 @@ function applyTheme() {
     effective === "light",
   );
 
-  // Update button active states
-  document.querySelectorAll(".theme-btn").forEach((btn) => {
+  // Update button active states (scoped to theme picker only)
+  document.querySelectorAll("#theme-picker .theme-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.theme === themePref);
   });
+
+  // Update accent color when theme changes (default accent differs per theme)
+  if (typeof applyAccentColor === "function") applyAccentColor();
 }
 
-document.querySelectorAll(".theme-btn").forEach((btn) => {
+document.querySelectorAll("#theme-picker .theme-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     themePref = btn.dataset.theme;
     localStorage.setItem("pomo-theme", themePref);
@@ -44,9 +49,81 @@ window.electronAPI.onSystemTheme((theme) => {
 
 applyTheme();
 
+// ── Accent color ───────────────────────────────────────────────
+const DEFAULT_ACCENT_DARK = "#ff2d2d";
+const DEFAULT_ACCENT_LIGHT = "#ff3b3b";
+const accentColorInput = document.getElementById("accent-color-input");
+const accentResetBtn = document.getElementById("accent-reset-btn");
+const heartIcon = document.querySelector(".credits svg[fill]");
+
+let savedAccent = localStorage.getItem("pomo-accent-color") || null;
+
+function getDefaultAccent() {
+  const effective = themePref === "auto" ? systemTheme : themePref;
+  return effective === "light" ? DEFAULT_ACCENT_LIGHT : DEFAULT_ACCENT_DARK;
+}
+
+function applyAccentColor() {
+  const color = savedAccent || getDefaultAccent();
+  document.documentElement.style.setProperty("--accent", color);
+  if (accentColorInput) accentColorInput.value = color;
+  // Update the heart icon fill in the credits
+  if (heartIcon) heartIcon.setAttribute("fill", color);
+}
+
+// Track when the color picker popup is open so we can suppress docking.
+// The native <input type="color"> steals focus from the window, which
+// fires mouseleave.  We treat this like a drag — block tuck while active.
+let colorPickerOpen = false;
+
+accentColorInput.addEventListener("focus", () => {
+  colorPickerOpen = true;
+  // Cancel any pending tuck, just like start-drag does
+  window.electronAPI.startDrag();
+});
+
+accentColorInput.addEventListener("blur", () => {
+  colorPickerOpen = false;
+});
+
+accentColorInput.addEventListener("input", (e) => {
+  savedAccent = e.target.value;
+  localStorage.setItem("pomo-accent-color", savedAccent);
+  applyAccentColor();
+});
+
+accentResetBtn.addEventListener("click", () => {
+  savedAccent = null;
+  localStorage.removeItem("pomo-accent-color");
+  applyAccentColor();
+});
+
+applyAccentColor();
+
 // ── Side tracking ──────────────────────────────────────────────
 let dockedSide = "right";
 const rootEl = document.getElementById("root");
+
+// ── Accent-themed arrow & clock toggle ─────────────────────────
+const accentArrowToggle = document.getElementById("accent-arrow-toggle");
+accentArrowToggle.checked =
+  localStorage.getItem("pomo-accent-arrow") === "true";
+
+function applyAccentArrow() {
+  if (accentArrowToggle.checked) {
+    rootEl.classList.add("accent-arrow");
+  } else {
+    rootEl.classList.remove("accent-arrow");
+  }
+}
+
+accentArrowToggle.addEventListener("change", () => {
+  localStorage.setItem("pomo-accent-arrow", accentArrowToggle.checked);
+  applyAccentArrow();
+});
+
+applyAccentArrow();
+
 const arrowTab = document.getElementById("arrow-tab");
 const arrowIcon = document.getElementById("arrow-icon");
 const miniTimerEl = document.getElementById("mini-timer");
@@ -66,7 +143,8 @@ function updateSideClasses(side) {
   }
 }
 
-window.electronAPI.getDockedSide().then(updateSideClasses);
+// The main process sends the docked side after restoring saved state in
+// did-finish-load, so we only need the listener (no invoke needed).
 window.electronAPI.onDockedSide(updateSideClasses);
 
 // ── Tuck state ─────────────────────────────────────────────────
@@ -85,16 +163,27 @@ window.electronAPI.onTuckState((tucked) => {
 
 // ── Drag handling ──────────────────────────────────────────────
 const header = document.getElementById("header");
+const arrowStrip = document.getElementById("arrow-strip");
 let dragging = false;
 let dragOffsetX = 0,
   dragOffsetY = 0;
 
-header.addEventListener("mousedown", (e) => {
-  if (e.target.closest(".header-btn")) return;
+function beginDrag(e) {
   dragging = true;
   dragOffsetX = e.screenX - window.screenX;
   dragOffsetY = e.screenY - window.screenY;
   window.electronAPI.startDrag();
+}
+
+header.addEventListener("mousedown", (e) => {
+  if (e.target.closest(".header-btn")) return;
+  beginDrag(e);
+});
+
+// Allow dragging from the arrow strip so the window can be
+// repositioned even while tucked (when the header is off-screen).
+arrowStrip.addEventListener("mousedown", (e) => {
+  beginDrag(e);
 });
 
 document.addEventListener("mousemove", (e) => {
@@ -109,13 +198,157 @@ document.addEventListener("mouseup", () => {
 });
 
 // ── Mouse enter / leave ────────────────────────────────────────
-rootEl.addEventListener("mouseenter", () => {
-  window.electronAPI.mouseEnter();
+
+// Behaviour settings
+let undockMode = localStorage.getItem("pomo-undock-mode") || "hover";
+let interactionArea = localStorage.getItem("pomo-interaction-area") || "full";
+
+// Helper: determine if an event target is within the active interaction area
+// when the app is tucked.
+function isInInteractionArea(e) {
+  if (!isTucked) return true; // when untucked, any hover/click counts
+
+  if (interactionArea === "full") {
+    // The whole arrow strip
+    return !!e.target.closest("#arrow-strip");
+  } else if (interactionArea === "smaller") {
+    // Arrow tab, mini timer, or the narrow strip zone
+    return !!e.target.closest("#arrow-tab") ||
+           !!e.target.closest("#mini-timer") ||
+           !!e.target.closest("#arrow-strip-edge");
+  } else {
+    // "arrow" — only the arrow tab and mini timer
+    return !!e.target.closest("#arrow-tab") || !!e.target.closest("#mini-timer");
+  }
+}
+
+rootEl.addEventListener("mouseenter", (e) => {
+  if (undockMode === "hover" && isInInteractionArea(e)) {
+    window.electronAPI.mouseEnter();
+  } else if (!isTucked) {
+    // Always cancel tuck timer when mouse is over the app (even in click mode)
+    window.electronAPI.mouseEnter();
+  }
+});
+
+// For "smaller" and "arrow" modes, we also need mouseenter on sub-elements
+// because rootEl mouseenter fires when entering the strip, but the target
+// might not match the specific sub-element.
+arrowStrip.addEventListener("mouseenter", (e) => {
+  if (undockMode === "hover" && isTucked && isInInteractionArea(e)) {
+    window.electronAPI.mouseEnter();
+  }
+});
+
+arrowTab.addEventListener("mouseenter", () => {
+  if (undockMode === "hover" && isTucked) {
+    // Arrow tab is always in the interaction area
+    window.electronAPI.mouseEnter();
+  }
+});
+
+miniTimerEl.addEventListener("mouseenter", () => {
+  if (undockMode === "hover" && isTucked) {
+    window.electronAPI.mouseEnter();
+  }
+});
+
+const arrowStripEdge = document.getElementById("arrow-strip-edge");
+arrowStripEdge.addEventListener("mouseenter", () => {
+  if (undockMode === "hover" && isTucked && interactionArea === "smaller") {
+    window.electronAPI.mouseEnter();
+  }
+});
+
+// Click-to-undock: click on the interaction area untucks
+arrowStrip.addEventListener("click", (e) => {
+  // Don't trigger on drag-end clicks
+  if (e.detail === 0) return;
+  if (undockMode === "click" && isTucked && isInInteractionArea(e)) {
+    window.electronAPI.mouseEnter();
+  }
 });
 
 rootEl.addEventListener("mouseleave", () => {
-  if (!dragging) window.electronAPI.mouseLeave();
+  if (!dragging && !colorPickerOpen) window.electronAPI.mouseLeave();
 });
+
+// ── Undock-mode setting ────────────────────────────────────────
+const undockBtns = document.querySelectorAll("[data-undock]");
+function applyUndockButtons() {
+  undockBtns.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.undock === undockMode);
+  });
+}
+undockBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    undockMode = btn.dataset.undock;
+    localStorage.setItem("pomo-undock-mode", undockMode);
+    applyUndockButtons();
+  });
+});
+applyUndockButtons();
+
+// ── Interaction-area setting ───────────────────────────────────
+const areaBtns = document.querySelectorAll("[data-area]");
+function applyAreaButtons() {
+  areaBtns.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.area === interactionArea);
+  });
+  // Show/hide the arrow-strip edge element
+  arrowStripEdge.style.display = interactionArea === "smaller" ? "" : "none";
+}
+
+let _flashOverlays = []; // track active overlays so we can cancel them
+
+function flashInteractionArea() {
+  // Remove any existing overlays immediately
+  _flashOverlays.forEach((ol) => ol.remove());
+  _flashOverlays = [];
+
+  // Determine which element(s) to flash based on the current setting
+  let targets = [];
+  if (interactionArea === "full") {
+    targets = [arrowStrip];
+  } else if (interactionArea === "smaller") {
+    targets = [arrowTab, miniTimerEl];
+    const edgeEl = document.getElementById("arrow-strip-edge");
+    if (edgeEl) targets.push(edgeEl);
+  } else {
+    targets = [arrowTab, miniTimerEl];
+  }
+
+  targets.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    const rootRect = rootEl.getBoundingClientRect();
+
+    const overlay = document.createElement("div");
+    overlay.className = "area-flash-overlay";
+    overlay.style.left = (rect.left - rootRect.left) + "px";
+    overlay.style.top = (rect.top - rootRect.top) + "px";
+    overlay.style.width = rect.width + "px";
+    overlay.style.height = rect.height + "px";
+    overlay.style.borderRadius = getComputedStyle(el).borderRadius;
+
+    rootEl.appendChild(overlay);
+    _flashOverlays.push(overlay);
+
+    overlay.addEventListener("animationend", () => {
+      overlay.remove();
+      _flashOverlays = _flashOverlays.filter((o) => o !== overlay);
+    }, { once: true });
+  });
+}
+
+areaBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    interactionArea = btn.dataset.area;
+    localStorage.setItem("pomo-interaction-area", interactionArea);
+    applyAreaButtons();
+    flashInteractionArea();
+  });
+});
+applyAreaButtons();
 
 // ── Close ──────────────────────────────────────────────────────
 document.getElementById("close-btn").addEventListener("click", () => {
@@ -553,6 +786,25 @@ const btnSkip = document.getElementById("btn-skip");
 const SM_CIRCUMFERENCE = 2 * Math.PI * 20;
 const MINI_CIRCUMFERENCE = 2 * Math.PI * 9;
 
+const timerRingSmall = document.getElementById("timer-ring-small");
+
+function flashTimerRing() {
+  // Show the app if tucked
+  if (isTucked) {
+    window.electronAPI.mouseEnter();
+  }
+  // Add flash animation to the clock ring area
+  timerRingSmall.classList.remove("flash");
+  // Force reflow so the animation restarts
+  void timerRingSmall.offsetWidth;
+  timerRingSmall.classList.add("flash");
+  timerRingSmall.addEventListener(
+    "animationend",
+    () => timerRingSmall.classList.remove("flash"),
+    { once: true },
+  );
+}
+
 const miniRingProgress = document.getElementById("mini-ring-progress");
 const miniTimerText = document.getElementById("mini-timer-text");
 const keepTimerToggle = document.getElementById("keep-timer-toggle");
@@ -608,7 +860,14 @@ function tick() {
     running = false;
     iconPlay.style.display = "";
     iconPause.style.display = "none";
-    playSound(sndTimerEnd);
+    // Play the appropriate sound: break ending vs focus ending
+    if (isBreak) {
+      playSound(sndBreakEnd);
+    } else {
+      playSound(sndFocusEnd);
+    }
+    // Flash the clock area
+    flashTimerRing();
     onPhaseEnd();
     updateMiniTimerVisibility();
     return;
