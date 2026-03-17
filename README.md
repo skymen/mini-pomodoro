@@ -47,8 +47,10 @@ Mini Pomodoro is a translucent desktop widget that docks to the edge of your scr
 
 - **Always on top** — visible on every workspace and virtual desktop
 - **Docks & auto-tucks** — slides into the screen edge after a short delay, peeking out with a small arrow or mini timer
+- **Pin to stay** — pin the window so it stays expanded and never tucks away
 - **Pomodoro timer** — configurable focus/break durations with session tracking
 - **Inline task list** — add, reorder (drag-and-drop), edit, and check off tasks
+- **Satisfying feedback** — subtle sounds and smooth animations for every interaction
 - **Translucent glass UI** — backdrop-blurred panel that blends with your desktop
 - **Dark & light themes** — follows your system preference, or pick manually
 
@@ -98,7 +100,8 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **Theme**                       | Switch between **Light**, **Dark**, or **Auto** (follows your OS).                                           |
 | **Accent color**                | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color.              |
-| **Accent-themed arrow & clock** | When enabled, the tucked-state arrow and mini timer ring use your accent color instead of the default white. |
+| **Accent-themed arrow** | Colors the tucked-state arrow with your accent color instead of the default white. |
+| **Accent-themed clock** | Colors the mini timer ring with your accent color instead of the default white. |
 
 ### Timer
 
@@ -123,14 +126,16 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 The app docks to whichever screen edge you drag it to and tucks itself away automatically:
 
 <p align="center">
-  <video src="assets/show docking.mp4" width="260" autoplay loop muted playsinline></video>
+  <img src="assets/show docking.gif" width="260" alt="Docking demo"/>
 </p>
 
 #### Interaction area
 
 The interaction area setting lets you control exactly how much of the collapsed strip reacts to your cursor:
 
-[video]("assets/show interaction.mp4")
+<p align="center">
+  <img src="assets/show interaction.gif" width="280" alt="Interaction area demo"/>
+</p>
 
 ---
 
