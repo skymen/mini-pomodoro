@@ -320,6 +320,12 @@ miniTimerEl.addEventListener("mouseenter", () => {
   if (undockMode === "hover" && isTucked) sendMouseEnter();
 });
 
+arrowStrip.addEventListener("mouseenter", () => {
+  if (undockMode === "hover" && isTucked && interactionArea === "full") {
+    sendMouseEnter();
+  }
+});
+
 const arrowStripEdge = document.getElementById("arrow-strip-edge");
 arrowStripEdge.addEventListener("mouseenter", () => {
   if (undockMode === "hover" && isTucked && interactionArea === "smaller") {
