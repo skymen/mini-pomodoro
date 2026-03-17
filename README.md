@@ -72,6 +72,10 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 <p align="center">
   <img src="assets/arrow red.png" height="36"/>
   <img src="assets/arrow pink.png" height="36"/>
+  <img src="assets/arrow yellow.png" height="36"/>
+  <img src="assets/arrow blue.png" height="36"/>
+  <img src="assets/arrow red inverted.png" height="36"/>
+  <img src="assets/arrow pink inverted.png" height="36"/>
   <img src="assets/arrow yellow inverted.png" height="36"/>
   <img src="assets/arrow blue inverted.png" height="36"/>
 </p>
