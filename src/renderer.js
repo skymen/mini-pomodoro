@@ -976,13 +976,15 @@ function flashTimerRing() {
     { once: true },
   );
 
-  // Spawn two staggered ripple rings
-  [0, 200].forEach((delay) => {
+  // Spawn three staggered ripple rings
+  [0, 200, 400, 1000, 1200, 1400, 2200, 2400, 2600].forEach((delay) => {
     setTimeout(() => {
       const ring = document.createElement("div");
       ring.className = "ripple-ring";
       timerRingSmall.appendChild(ring);
-      ring.addEventListener("animationend", () => ring.remove(), { once: true });
+      ring.addEventListener("animationend", () => ring.remove(), {
+        once: true,
+      });
     }, delay);
   });
 }
@@ -1006,9 +1008,7 @@ autoHideToggle.addEventListener("change", () => {
 
 // ── Timer duration settings ───────────────────────────────────
 const focusDurationInput = document.getElementById("focus-duration");
-const shortBreakDurationInput = document.getElementById(
-  "short-break-duration",
-);
+const shortBreakDurationInput = document.getElementById("short-break-duration");
 const longBreakDurationInput = document.getElementById("long-break-duration");
 const sessionsCountInput = document.getElementById("sessions-count");
 
@@ -1024,10 +1024,26 @@ function clamp(val, min, max) {
 function applyTimerSettings() {
   const wasRunning = running;
 
-  FOCUS_MINS = clamp(parseInt(focusDurationInput.value) || DEFAULT_FOCUS_MINS, 1, 120);
-  SHORT_BREAK = clamp(parseInt(shortBreakDurationInput.value) || DEFAULT_SHORT_BREAK, 1, 60);
-  LONG_BREAK = clamp(parseInt(longBreakDurationInput.value) || DEFAULT_LONG_BREAK, 1, 60);
-  SESSIONS = clamp(parseInt(sessionsCountInput.value) || DEFAULT_SESSIONS, 1, 12);
+  FOCUS_MINS = clamp(
+    parseInt(focusDurationInput.value) || DEFAULT_FOCUS_MINS,
+    1,
+    120,
+  );
+  SHORT_BREAK = clamp(
+    parseInt(shortBreakDurationInput.value) || DEFAULT_SHORT_BREAK,
+    1,
+    60,
+  );
+  LONG_BREAK = clamp(
+    parseInt(longBreakDurationInput.value) || DEFAULT_LONG_BREAK,
+    1,
+    60,
+  );
+  SESSIONS = clamp(
+    parseInt(sessionsCountInput.value) || DEFAULT_SESSIONS,
+    1,
+    12,
+  );
 
   // Update inputs to clamped values
   focusDurationInput.value = FOCUS_MINS;
@@ -1058,22 +1074,18 @@ sessionsCountInput.addEventListener("change", applyTimerSettings);
 
 // ── Individual timer reset buttons ────────────────────────────
 function updateTimerResetVisibility() {
-  document.getElementById("reset-focus").classList.toggle(
-    "visible",
-    FOCUS_MINS !== DEFAULT_FOCUS_MINS,
-  );
-  document.getElementById("reset-short-break").classList.toggle(
-    "visible",
-    SHORT_BREAK !== DEFAULT_SHORT_BREAK,
-  );
-  document.getElementById("reset-long-break").classList.toggle(
-    "visible",
-    LONG_BREAK !== DEFAULT_LONG_BREAK,
-  );
-  document.getElementById("reset-sessions").classList.toggle(
-    "visible",
-    SESSIONS !== DEFAULT_SESSIONS,
-  );
+  document
+    .getElementById("reset-focus")
+    .classList.toggle("visible", FOCUS_MINS !== DEFAULT_FOCUS_MINS);
+  document
+    .getElementById("reset-short-break")
+    .classList.toggle("visible", SHORT_BREAK !== DEFAULT_SHORT_BREAK);
+  document
+    .getElementById("reset-long-break")
+    .classList.toggle("visible", LONG_BREAK !== DEFAULT_LONG_BREAK);
+  document
+    .getElementById("reset-sessions")
+    .classList.toggle("visible", SESSIONS !== DEFAULT_SESSIONS);
 }
 
 document.getElementById("reset-focus").addEventListener("click", () => {
@@ -1200,7 +1212,9 @@ function dismissCongrats() {
   requestResize();
 }
 
-document.getElementById("congrats-dismiss").addEventListener("click", dismissCongrats);
+document
+  .getElementById("congrats-dismiss")
+  .addEventListener("click", dismissCongrats);
 
 function startTimer() {
   if (running) return;
