@@ -368,6 +368,15 @@ ipcMain.on("open-external", (_, url) => {
   shell.openExternal(url).catch(() => {});
 });
 
+ipcMain.on("set-ignore-mouse", (_, ignore) => {
+  if (!win) return;
+  if (ignore) {
+    win.setIgnoreMouseEvents(true, { forward: true });
+  } else {
+    win.setIgnoreMouseEvents(false);
+  }
+});
+
 // ── App lifecycle ────────────────────────────────────────────────────
 
 app.whenReady().then(createWindow);

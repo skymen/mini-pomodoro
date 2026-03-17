@@ -98,6 +98,15 @@ body {
   padding-top: 32px;
   margin: 20px 0;
 }
+/* When the interaction area is not "full", make the strip click-through */
+#root.click-through #arrow-strip {
+  pointer-events: none;
+}
+#root.click-through #arrow-tab.visible,
+#root.click-through #mini-timer.visible,
+#root.click-through #arrow-strip-edge {
+  pointer-events: auto;
+}
 #root.dock-left #arrow-strip {
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;

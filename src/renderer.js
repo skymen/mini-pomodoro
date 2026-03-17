@@ -157,7 +157,7 @@ applyAccentColor();
 let dockedSide = "right";
 const rootEl = document.getElementById("root");
 
-// ── Accent-themed arrow & clock toggle ─────────────────────────
+// ── Accent-themed arrow toggle ─────────────────────────────────
 const accentArrowToggle = document.getElementById("accent-arrow-toggle");
 accentArrowToggle.checked =
   localStorage.getItem("pomo-accent-arrow") === "true";
@@ -176,6 +176,26 @@ accentArrowToggle.addEventListener("change", () => {
 });
 
 applyAccentArrow();
+
+// ── Accent-themed clock toggle ─────────────────────────────────
+const accentClockToggle = document.getElementById("accent-clock-toggle");
+accentClockToggle.checked =
+  localStorage.getItem("pomo-accent-clock") === "true";
+
+function applyAccentClock() {
+  if (accentClockToggle.checked) {
+    rootEl.classList.add("accent-clock");
+  } else {
+    rootEl.classList.remove("accent-clock");
+  }
+}
+
+accentClockToggle.addEventListener("change", () => {
+  localStorage.setItem("pomo-accent-clock", accentClockToggle.checked);
+  applyAccentClock();
+});
+
+applyAccentClock();
 
 const arrowTab = document.getElementById("arrow-tab");
 const arrowIcon = document.getElementById("arrow-icon");
@@ -212,6 +232,7 @@ window.electronAPI.onTuckState((tucked) => {
     arrowTab.classList.remove("visible");
     miniTimerEl.classList.remove("visible");
   }
+  updateClickThrough();
 });
 
 // ── Drag handling ──────────────────────────────────────────────
@@ -268,6 +289,16 @@ applyPinState();
 let undockMode = localStorage.getItem("pomo-undock-mode") || "hover";
 let interactionArea =
   localStorage.getItem("pomo-interaction-area") || "smaller";
+
+// Enable OS-level click-through on the arrow strip when the interaction
+// area is not "full" and the window is tucked.  With forwarding enabled,
+// Electron still fires mouseenter/mouseleave on the interactive children
+// (arrow-tab, mini-timer, edge) whose pointer-events remain auto.
+function updateClickThrough() {
+  const shouldIgnore = isTucked && interactionArea !== "full";
+  rootEl.classList.toggle("click-through", shouldIgnore);
+  window.electronAPI.setIgnoreMouse(shouldIgnore);
+}
 
 // Helper: check if an element (or its ancestor) is part of the interaction zone
 function elIsInInteractionArea(el) {
@@ -459,6 +490,7 @@ areaBtns.forEach((btn) => {
     localStorage.setItem("pomo-interaction-area", interactionArea);
     applyAreaButtons();
     flashInteractionArea();
+    updateClickThrough();
   });
 });
 applyAreaButtons();
@@ -519,6 +551,7 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   interactionArea = "smaller";
   localStorage.removeItem("pomo-interaction-area");
   applyAreaButtons();
+  updateClickThrough();
 
   // Pin state
   pinned = false;
@@ -1200,13 +1233,6 @@ function tick() {
 
 function onPhaseEnd() {
   if (!isBreak) {
-    // Focus phase ended: auto-complete the first incomplete task
-    const idx = tasks.findIndex((t) => !t.done);
-    if (idx !== -1) {
-      tasks[idx].done = true;
-      saveTasks();
-      renderTasks();
-    }
     // Last session — skip the break and go straight to congrats
     if (session % SESSIONS === 0) {
       showCongrats();

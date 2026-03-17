@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   closeWindow: () => ipcRenderer.send("close-window"),
   resizeHeight: (h) => ipcRenderer.send("resize-height", h),
   openExternal: (url) => ipcRenderer.send("open-external", url),
+  setIgnoreMouse: (ignore) => ipcRenderer.send("set-ignore-mouse", ignore),
   setPinned: (pinned) => ipcRenderer.send("set-pinned", pinned),
   getDockedSide: () => ipcRenderer.invoke("get-docked-side"),
   getMaxHeight: () => ipcRenderer.invoke("get-max-height"),

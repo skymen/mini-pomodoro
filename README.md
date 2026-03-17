@@ -5,7 +5,11 @@
 <h1 align="center">Mini Pomodoro</h1>
 
 <p align="center">
-  A minimal, always-on-top Pomodoro timer desktop widget with task tracking.
+  A minimal, always-on-top Pomodoro timer that sits quietly on the edge of your screen.
+</p>
+
+<p align="center">
+  <img src="assets/dark red.png" width="280" alt="Mini Pomodoro — dark red theme"/>
 </p>
 
 <table align="center">
@@ -39,24 +43,112 @@
 
 ---
 
-## Features
+Mini Pomodoro is a translucent desktop widget that docks to the edge of your screen and tucks itself away when you don't need it. It tracks focus sessions with a Pomodoro timer and keeps a simple drag-and-drop task list — nothing more, nothing less.
 
-- Pomodoro timer with configurable work/break durations
-- Inline task list with drag-and-drop reordering
-- Docks to screen edges and auto-tucks out of the way
-- Dark and light theme (follows system preference)
-- Translucent glass UI with backdrop blur
-- Always-on-top, visible on all workspaces
+- **Always on top** — visible on every workspace and virtual desktop
+- **Docks & auto-tucks** — slides into the screen edge after a short delay, peeking out with a small arrow or mini timer
+- **Pomodoro timer** — configurable focus/break durations with session tracking
+- **Inline task list** — add, reorder (drag-and-drop), edit, and check off tasks
+- **Translucent glass UI** — backdrop-blurred panel that blends with your desktop
+- **Dark & light themes** — follows your system preference, or pick manually
+
+---
+
+## Customization
+
+Pick any accent color — choose from presets or use the color picker for any shade you like. Toggle the accent-themed arrow and mini timer to make the collapsed indicator match.
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="assets/dark red.png" width="200"/><br/><sub>Dark — Red</sub></td>
+    <td align="center"><img src="assets/dark yellow.png" width="200"/><br/><sub>Dark — Yellow</sub></td>
+    <td align="center"><img src="assets/light blue.png" width="200"/><br/><sub>Light — Blue</sub></td>
+    <td align="center"><img src="assets/light pink.png" width="200"/><br/><sub>Light — Pink</sub></td>
+  </tr>
+</table>
+
+When the app is tucked away, the arrow and mini timer take on your accent color too:
+
+<table align="center">
+  <tr>
+    <td align="center"><picture><img src="assets/arrow red.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow pink.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow yellow inverted.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow blue inverted.png" height="80"/></picture></td>
+  </tr>
+  <tr>
+    <td align="center"><picture><img src="assets/timer red inverted.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/timer pink.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/timer yellow.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/timer blue inverted.png" height="80"/></picture></td>
+  </tr>
+</table>
+
+---
+
+## Settings
+
+<p align="center">
+  <img src="assets/settings.png" width="280" alt="Settings panel"/>
+</p>
+
+### Appearance
+
+| Setting | Description |
+|---|---|
+| **Theme** | Switch between **Light**, **Dark**, or **Auto** (follows your OS). |
+| **Accent color** | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color. |
+| **Accent-themed arrow & clock** | When enabled, the tucked-state arrow and mini timer ring use your accent color instead of the default white. |
+
+### Timer
+
+| Setting | Description |
+|---|---|
+| **Focus** | Duration of each focus session (1–120 min, default 25). |
+| **Short break** | Break between sessions (1–60 min, default 5). |
+| **Long break** | Break after completing all sessions (1–60 min, default 15). |
+| **Sessions** | Number of focus sessions before a long break (1–12, default 4). |
+
+### Behaviour
+
+| Setting | Description |
+|---|---|
+| **Show timer when collapsed** | Display a mini countdown ring on the screen edge while the timer is running and the app is tucked. |
+| **Auto-hide after timer alert** | Automatically tuck the app back after it pops out to notify you a phase ended. |
+| **Undock on** | Choose **Hover** (expand on mouse-over) or **Click** (expand only when clicked). |
+| **Interaction area** | Controls how much of the tucked strip responds to your mouse: **Full** (entire strip), **Smaller** (arrow + timer + edge), or **Arrow** (arrow and timer only). |
+
+#### Docking
+
+The app docks to whichever screen edge you drag it to and tucks itself away automatically:
+
+<p align="center">
+  <video src="assets/show docking.mp4" width="260" autoplay loop muted playsinline></video>
+</p>
+
+#### Interaction area
+
+The interaction area setting lets you control exactly how much of the collapsed strip reacts to your cursor:
+
+<p align="center">
+  <video src="assets/show interaction.mp4" width="280" autoplay loop muted playsinline></video>
+</p>
+
+---
 
 ## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Run in development mode
-npm start
-
-# Build for your platform
-npm run dist
+npm install       # install dependencies
+npm start         # build + launch the app
+npm run dev        # watch mode (rebuild on changes)
+npm run dist       # package for your platform
 ```
+
+## Contributing
+
+Contributions are welcome. Fork the repo, create a branch, and open a PR. Keep changes focused and test on at least one platform before submitting.
+
+## License
+
+ISC
