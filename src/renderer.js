@@ -248,7 +248,8 @@ document.addEventListener("mouseup", () => {
 
 // Behaviour settings
 let undockMode = localStorage.getItem("pomo-undock-mode") || "hover";
-let interactionArea = localStorage.getItem("pomo-interaction-area") || "full";
+let interactionArea =
+  localStorage.getItem("pomo-interaction-area") || "smaller";
 
 // Helper: check if an element (or its ancestor) is part of the interaction zone
 function elIsInInteractionArea(el) {
@@ -477,12 +478,12 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   applyAccentArrow();
 
   // Keep timer when collapsed
-  keepTimerToggle.checked = false;
+  keepTimerToggle.checked = true;
   localStorage.removeItem("pomo-keep-timer");
   updateMiniTimerVisibility();
 
   // Auto-hide after timer alert
-  autoHideToggle.checked = false;
+  autoHideToggle.checked = true;
   localStorage.removeItem("pomo-auto-hide");
 
   // Undock mode
@@ -491,7 +492,7 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   applyUndockButtons();
 
   // Interaction area
-  interactionArea = "full";
+  interactionArea = "smaller";
   localStorage.removeItem("pomo-interaction-area");
   applyAreaButtons();
 
@@ -993,7 +994,7 @@ const miniRingProgress = document.getElementById("mini-ring-progress");
 const miniTimerText = document.getElementById("mini-timer-text");
 const keepTimerToggle = document.getElementById("keep-timer-toggle");
 
-keepTimerToggle.checked = localStorage.getItem("pomo-keep-timer") === "true";
+keepTimerToggle.checked = localStorage.getItem("pomo-keep-timer") !== "false";
 keepTimerToggle.addEventListener("change", () => {
   localStorage.setItem("pomo-keep-timer", keepTimerToggle.checked);
   updateMiniTimerVisibility();
@@ -1001,7 +1002,7 @@ keepTimerToggle.addEventListener("change", () => {
 
 // ── Auto-hide after timer alert ───────────────────────────────
 const autoHideToggle = document.getElementById("auto-hide-toggle");
-autoHideToggle.checked = localStorage.getItem("pomo-auto-hide") === "true";
+autoHideToggle.checked = localStorage.getItem("pomo-auto-hide") !== "false";
 autoHideToggle.addEventListener("change", () => {
   localStorage.setItem("pomo-auto-hide", autoHideToggle.checked);
 });
