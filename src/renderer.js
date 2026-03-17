@@ -14,16 +14,20 @@ function playSound(audio) {
   audio.play().catch(() => {});
 }
 
+// ── Accent defaults (hoisted above theme system which calls applyAccentColor) ──
+const DEFAULT_ACCENT_DARK = "#ff2d2d";
+const DEFAULT_ACCENT_LIGHT = "#ff3b3b";
+const accentColorInput = document.getElementById("accent-color-input");
+const colorSwatches = document.querySelectorAll(".color-swatch");
+const heartIcon = document.querySelector(".credits svg[fill]");
+
 // ── Theme system ───────────────────────────────────────────────
 let themePref = localStorage.getItem("pomo-theme") || "auto";
 let systemTheme = "dark"; // updated by main process
 
 function applyTheme() {
   const effective = themePref === "auto" ? systemTheme : themePref;
-  document.documentElement.classList.toggle(
-    "light",
-    effective === "light",
-  );
+  document.documentElement.classList.toggle("light", effective === "light");
 
   // Update button active states (scoped to theme picker only)
   document.querySelectorAll("#theme-picker .theme-btn").forEach((btn) => {
@@ -49,13 +53,6 @@ window.electronAPI.onSystemTheme((theme) => {
 
 applyTheme();
 
-// ── Accent color ───────────────────────────────────────────────
-const DEFAULT_ACCENT_DARK = "#ff2d2d";
-const DEFAULT_ACCENT_LIGHT = "#ff3b3b";
-const accentColorInput = document.getElementById("accent-color-input");
-const accentResetBtn = document.getElementById("accent-reset-btn");
-const heartIcon = document.querySelector(".credits svg[fill]");
-
 let savedAccent = localStorage.getItem("pomo-accent-color") || null;
 
 function getDefaultAccent() {
@@ -69,7 +66,48 @@ function applyAccentColor() {
   if (accentColorInput) accentColorInput.value = color;
   // Update the heart icon fill in the credits
   if (heartIcon) heartIcon.setAttribute("fill", color);
+  // Update swatch active states
+  updateSwatchStates();
 }
+
+function updateSwatchStates() {
+  const currentColor = (savedAccent ?? getDefaultAccent()).toLowerCase();
+  colorSwatches.forEach((btn) => {
+    if (btn.classList.contains("custom-swatch")) {
+      // Custom swatch is active when the current color doesn't match any preset
+      const isPreset = [...colorSwatches].some(
+        (s) =>
+          !s.classList.contains("custom-swatch") &&
+          s.dataset.color &&
+          s.dataset.color.toLowerCase() === currentColor,
+      );
+      btn.classList.toggle("active", !isPreset && savedAccent !== null);
+    } else {
+      btn.style.background = btn.dataset.color;
+      btn.classList.toggle(
+        "active",
+        btn.dataset.color.toLowerCase() === currentColor,
+      );
+    }
+  });
+}
+
+// Preset swatch clicks
+colorSwatches.forEach((btn) => {
+  if (btn.classList.contains("custom-swatch")) return; // handled by input
+  btn.addEventListener("click", () => {
+    const isDefault =
+      btn.dataset.color.toLowerCase() === getDefaultAccent().toLowerCase();
+    if (isDefault) {
+      savedAccent = null;
+      localStorage.removeItem("pomo-accent-color");
+    } else {
+      savedAccent = btn.dataset.color;
+      localStorage.setItem("pomo-accent-color", savedAccent);
+    }
+    applyAccentColor();
+  });
+});
 
 // Track when the color picker popup is open so we can suppress docking.
 // The native <input type="color"> steals focus from the window, which
@@ -89,12 +127,6 @@ accentColorInput.addEventListener("blur", () => {
 accentColorInput.addEventListener("input", (e) => {
   savedAccent = e.target.value;
   localStorage.setItem("pomo-accent-color", savedAccent);
-  applyAccentColor();
-});
-
-accentResetBtn.addEventListener("click", () => {
-  savedAccent = null;
-  localStorage.removeItem("pomo-accent-color");
   applyAccentColor();
 });
 
@@ -180,12 +212,6 @@ header.addEventListener("mousedown", (e) => {
   beginDrag(e);
 });
 
-// Allow dragging from the arrow strip so the window can be
-// repositioned even while tucked (when the header is off-screen).
-arrowStrip.addEventListener("mousedown", (e) => {
-  beginDrag(e);
-});
-
 document.addEventListener("mousemove", (e) => {
   if (!dragging) return;
   window.moveTo(e.screenX - dragOffsetX, e.screenY - dragOffsetY);
@@ -203,74 +229,110 @@ document.addEventListener("mouseup", () => {
 let undockMode = localStorage.getItem("pomo-undock-mode") || "hover";
 let interactionArea = localStorage.getItem("pomo-interaction-area") || "full";
 
-// Helper: determine if an event target is within the active interaction area
-// when the app is tucked.
-function isInInteractionArea(e) {
-  if (!isTucked) return true; // when untucked, any hover/click counts
-
+// Helper: check if an element (or its ancestor) is part of the interaction zone
+function elIsInInteractionArea(el) {
   if (interactionArea === "full") {
-    // The whole arrow strip
-    return !!e.target.closest("#arrow-strip");
+    return !!el.closest("#arrow-strip");
   } else if (interactionArea === "smaller") {
-    // Arrow tab, mini timer, or the narrow strip zone
-    return !!e.target.closest("#arrow-tab") ||
-           !!e.target.closest("#mini-timer") ||
-           !!e.target.closest("#arrow-strip-edge");
+    return (
+      !!el.closest("#arrow-tab") ||
+      !!el.closest("#mini-timer") ||
+      !!el.closest("#arrow-strip-edge")
+    );
   } else {
-    // "arrow" — only the arrow tab and mini timer
-    return !!e.target.closest("#arrow-tab") || !!e.target.closest("#mini-timer");
+    return !!el.closest("#arrow-tab") || !!el.closest("#mini-timer");
   }
 }
 
+// Helper using event target
+function isInInteractionArea(e) {
+  if (!isTucked) return true;
+  return elIsInInteractionArea(e.target);
+}
+
+function sendMouseEnter() {
+  window.electronAPI.mouseEnter();
+}
+
+function sendMouseLeave() {
+  if (!dragging && !colorPickerOpen) window.electronAPI.mouseLeave();
+}
+
+// ── Enter logic ────────────────────────────────────────────────
+
 rootEl.addEventListener("mouseenter", (e) => {
-  if (undockMode === "hover" && isInInteractionArea(e)) {
-    window.electronAPI.mouseEnter();
-  } else if (!isTucked) {
-    // Always cancel tuck timer when mouse is over the app (even in click mode)
-    window.electronAPI.mouseEnter();
+  if (!isTucked) {
+    // When untucked, always cancel tuck timer on entering the app
+    sendMouseEnter();
+  } else if (undockMode === "hover" && isInInteractionArea(e)) {
+    sendMouseEnter();
   }
 });
 
-// For "smaller" and "arrow" modes, we also need mouseenter on sub-elements
-// because rootEl mouseenter fires when entering the strip, but the target
-// might not match the specific sub-element.
-arrowStrip.addEventListener("mouseenter", (e) => {
-  if (undockMode === "hover" && isTucked && isInInteractionArea(e)) {
-    window.electronAPI.mouseEnter();
-  }
-});
-
+// Sub-element enter listeners for when rootEl mouseenter target
+// is the strip itself but we need to detect entering a child
 arrowTab.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked) {
-    // Arrow tab is always in the interaction area
-    window.electronAPI.mouseEnter();
-  }
+  if (undockMode === "hover" && isTucked) sendMouseEnter();
 });
 
 miniTimerEl.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked) {
-    window.electronAPI.mouseEnter();
-  }
+  if (undockMode === "hover" && isTucked) sendMouseEnter();
 });
 
 const arrowStripEdge = document.getElementById("arrow-strip-edge");
 arrowStripEdge.addEventListener("mouseenter", () => {
   if (undockMode === "hover" && isTucked && interactionArea === "smaller") {
-    window.electronAPI.mouseEnter();
+    sendMouseEnter();
   }
 });
 
-// Click-to-undock: click on the interaction area untucks
+// Click-to-undock
 arrowStrip.addEventListener("click", (e) => {
-  // Don't trigger on drag-end clicks
-  if (e.detail === 0) return;
+  if (e.detail === 0) return; // ignore drag-end clicks
   if (undockMode === "click" && isTucked && isInInteractionArea(e)) {
-    window.electronAPI.mouseEnter();
+    sendMouseEnter();
   }
 });
 
+// ── Leave logic ────────────────────────────────────────────────
+
+// When untucked: leaving rootEl entirely means mouse left the app
 rootEl.addEventListener("mouseleave", () => {
-  if (!dragging && !colorPickerOpen) window.electronAPI.mouseLeave();
+  if (!isTucked) {
+    sendMouseLeave();
+  }
+  // When tucked, leave is handled by the interaction area listeners below
+});
+
+// When tucked and interaction area != full, detect mouse leaving
+// the interaction sub-elements. We use mouseleave on the strip
+// (for full mode) and on individual elements (for smaller/arrow).
+arrowStrip.addEventListener("mouseleave", () => {
+  if (isTucked && interactionArea === "full") {
+    sendMouseLeave();
+  }
+});
+
+arrowTab.addEventListener("mouseleave", (e) => {
+  if (!isTucked || interactionArea === "full") return;
+  // Check if the mouse moved to another interaction element
+  const to = e.relatedTarget;
+  if (to && elIsInInteractionArea(to)) return;
+  sendMouseLeave();
+});
+
+miniTimerEl.addEventListener("mouseleave", (e) => {
+  if (!isTucked || interactionArea === "full") return;
+  const to = e.relatedTarget;
+  if (to && elIsInInteractionArea(to)) return;
+  sendMouseLeave();
+});
+
+arrowStripEdge.addEventListener("mouseleave", (e) => {
+  if (!isTucked || interactionArea !== "smaller") return;
+  const to = e.relatedTarget;
+  if (to && elIsInInteractionArea(to)) return;
+  sendMouseLeave();
 });
 
 // ── Undock-mode setting ────────────────────────────────────────
@@ -324,8 +386,8 @@ function flashInteractionArea() {
 
     const overlay = document.createElement("div");
     overlay.className = "area-flash-overlay";
-    overlay.style.left = (rect.left - rootRect.left) + "px";
-    overlay.style.top = (rect.top - rootRect.top) + "px";
+    overlay.style.left = rect.left - rootRect.left + "px";
+    overlay.style.top = rect.top - rootRect.top + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
     overlay.style.borderRadius = getComputedStyle(el).borderRadius;
@@ -333,10 +395,14 @@ function flashInteractionArea() {
     rootEl.appendChild(overlay);
     _flashOverlays.push(overlay);
 
-    overlay.addEventListener("animationend", () => {
-      overlay.remove();
-      _flashOverlays = _flashOverlays.filter((o) => o !== overlay);
-    }, { once: true });
+    overlay.addEventListener(
+      "animationend",
+      () => {
+        overlay.remove();
+        _flashOverlays = _flashOverlays.filter((o) => o !== overlay);
+      },
+      { once: true },
+    );
   });
 }
 
@@ -395,8 +461,7 @@ function requestResize() {
       const style = getComputedStyle(panel);
       h += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
       h +=
-        parseFloat(style.borderTopWidth) +
-        parseFloat(style.borderBottomWidth);
+        parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
       h += 12; // outer chrome (root margins, arrow strip, etc.)
       window.electronAPI.resizeHeight(h);
     });
@@ -412,12 +477,18 @@ const doneListEl = document.getElementById("done-list");
 const doneCountEl = document.getElementById("done-count");
 const clearDoneBtn = document.getElementById("clear-done-btn");
 let _nextId = 1;
-function genId() { return _nextId++; }
+function genId() {
+  return _nextId++;
+}
 let tasks = JSON.parse(localStorage.getItem("pomo-tasks") || "[]");
 // Migrate tasks that lack an id (from older versions)
-tasks.forEach((t) => { if (!t.id) t.id = genId(); });
+tasks.forEach((t) => {
+  if (!t.id) t.id = genId();
+});
 // Ensure _nextId is above any existing id
-tasks.forEach((t) => { if (t.id >= _nextId) _nextId = t.id + 1; });
+tasks.forEach((t) => {
+  if (t.id >= _nextId) _nextId = t.id + 1;
+});
 
 clearDoneBtn.addEventListener("click", (e) => {
   e.preventDefault();
@@ -479,13 +550,15 @@ function createDoneEl(t, origIdx, animateStrike) {
 // Used to suppress the strikethrough animation on re-renders.
 const _renderedDoneIds = new Set();
 // Pre-seed with tasks already done on load so they don't animate
-tasks.forEach((t) => { if (t.done) _renderedDoneIds.add(t.id); });
+tasks.forEach((t) => {
+  if (t.done) _renderedDoneIds.add(t.id);
+});
 
 // Reconcile a container's children with a list of desired elements,
 // keyed by data-id, reusing existing DOM nodes where possible.
 function reconcileList(container, desiredEls) {
-  const desiredMap = new Map();          // id -> new element
-  const desiredOrder = [];               // ordered ids
+  const desiredMap = new Map(); // id -> new element
+  const desiredOrder = []; // ordered ids
   for (const el of desiredEls) {
     const id = el.dataset.id;
     desiredMap.set(id, el);
@@ -545,7 +618,11 @@ function reconcileList(container, desiredEls) {
       // New element – insert it with the fade-in animation
       const newEl = desiredMap.get(id);
       newEl.classList.add("fade-in");
-      newEl.addEventListener("animationend", () => newEl.classList.remove("fade-in"), { once: true });
+      newEl.addEventListener(
+        "animationend",
+        () => newEl.classList.remove("fade-in"),
+        { once: true },
+      );
       container.insertBefore(newEl, refNode);
     }
   }
@@ -707,22 +784,27 @@ function initSortable() {
 
       // Map from list indices (incomplete only) to tasks array indices
       const incompleteIndices = [];
-      tasks.forEach((t, i) => { if (!t.done) incompleteIndices.push(i); });
+      tasks.forEach((t, i) => {
+        if (!t.done) incompleteIndices.push(i);
+      });
 
       const srcTaskIdx = incompleteIndices[oldIndex];
       const [moved] = tasks.splice(srcTaskIdx, 1);
 
       // Recalculate incomplete indices after removal
       const newIncompleteIndices = [];
-      tasks.forEach((t, i) => { if (!t.done) newIncompleteIndices.push(i); });
+      tasks.forEach((t, i) => {
+        if (!t.done) newIncompleteIndices.push(i);
+      });
 
       // Find where to insert
       let insertAt;
       if (newIndex >= newIncompleteIndices.length) {
         // Moved to end — insert after last incomplete task
-        insertAt = newIncompleteIndices.length > 0
-          ? newIncompleteIndices[newIncompleteIndices.length - 1] + 1
-          : tasks.length;
+        insertAt =
+          newIncompleteIndices.length > 0
+            ? newIncompleteIndices[newIncompleteIndices.length - 1] + 1
+            : tasks.length;
       } else {
         insertAt = newIncompleteIndices[newIndex];
       }
@@ -748,7 +830,10 @@ function initSortable() {
       // Nudge the hover state by dispatching a synthetic pointer event
       // on the element currently under the cursor.
       requestAnimationFrame(() => {
-        const el = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
+        const el = document.elementFromPoint(
+          evt.originalEvent.clientX,
+          evt.originalEvent.clientY,
+        );
         if (el) {
           el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
           el.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
@@ -809,8 +894,7 @@ const miniRingProgress = document.getElementById("mini-ring-progress");
 const miniTimerText = document.getElementById("mini-timer-text");
 const keepTimerToggle = document.getElementById("keep-timer-toggle");
 
-keepTimerToggle.checked =
-  localStorage.getItem("pomo-keep-timer") === "true";
+keepTimerToggle.checked = localStorage.getItem("pomo-keep-timer") === "true";
 keepTimerToggle.addEventListener("change", () => {
   localStorage.setItem("pomo-keep-timer", keepTimerToggle.checked);
   updateMiniTimerVisibility();
@@ -885,8 +969,7 @@ function onPhaseEnd() {
       renderTasks();
     }
     isBreak = true;
-    totalSeconds =
-      (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
+    totalSeconds = (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
   } else {
     isBreak = false;
     session++;

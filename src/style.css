@@ -85,10 +85,6 @@ body {
   justify-content: center;
   position: relative;
   padding-top: 52px;
-  cursor: grab;
-}
-#arrow-strip:active {
-  cursor: grabbing;
 }
 
 /* Narrow interaction strip for "smaller" interaction-area mode */
@@ -98,7 +94,7 @@ body {
   bottom: 0;
   width: 3px;
   z-index: 1;
-  background: var(--text-faint);
+  background: transparent;
   border-radius: 1px;
 }
 #root.dock-left #arrow-strip-edge {
@@ -262,29 +258,58 @@ body {
 }
 
 /* ── Accent color picker ──────────────────────────────────────── */
+.accent-color-row {
+  flex-wrap: wrap;
+}
 #accent-picker {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
-#accent-color-input {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  background: transparent;
+.color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
   cursor: pointer;
   padding: 0;
+  transition: border-color 0.15s, transform 0.15s;
+  position: relative;
 }
-#accent-color-input::-webkit-color-swatch-wrapper {
-  padding: 1px;
+.color-swatch:hover {
+  transform: scale(1.15);
 }
-#accent-color-input::-webkit-color-swatch {
+.color-swatch.active {
+  border-color: var(--text);
+}
+
+/* Custom swatch wraps the native color input */
+.custom-swatch {
+  background: conic-gradient(
+    red, yellow, lime, aqua, blue, magenta, red
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+}
+.custom-swatch svg {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+}
+.custom-swatch input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
   border: none;
-  border-radius: 3px;
 }
 
 /* ── Accent-themed arrow & clock ─────────────────────────────── */

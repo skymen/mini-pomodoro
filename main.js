@@ -100,7 +100,7 @@ function createWindow() {
     win.show();
 
     // Auto-dock shortly after startup so the window appears briefly then tucks
-    //setTimeout(() => tuck(), 600);
+    setTimeout(() => tuck(), 600);
   });
 
   nativeTheme.on("updated", () => {
