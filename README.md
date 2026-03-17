@@ -39,6 +39,7 @@
 
 <p align="center">
   <img src="assets/dark red.png" width="280" alt="Mini Pomodoro — dark red theme"/>
+  <img src="assets/light pink.png" width="280" alt="Mini Pomodoro — light pink theme"/>
 </p>
 
 ---
@@ -63,9 +64,9 @@ Pick any accent color — choose from presets or use the color picker for any sh
 <table align="center">
   <tr>
     <td align="center"><img src="assets/dark red.png" width="200"/><br/><sub>Dark — Red</sub></td>
+    <td align="center"><img src="assets/light pink.png" width="200"/><br/><sub>Light — Pink</sub></td>
     <td align="center"><img src="assets/dark yellow.png" width="200"/><br/><sub>Dark — Yellow</sub></td>
     <td align="center"><img src="assets/light blue.png" width="200"/><br/><sub>Light — Blue</sub></td>
-    <td align="center"><img src="assets/light pink.png" width="200"/><br/><sub>Light — Pink</sub></td>
   </tr>
 </table>
 
