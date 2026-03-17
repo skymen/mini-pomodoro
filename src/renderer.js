@@ -60,9 +60,27 @@ function getDefaultAccent() {
   return effective === "light" ? DEFAULT_ACCENT_LIGHT : DEFAULT_ACCENT_DARK;
 }
 
+// Compute perceived luminance and return a contrasting foreground color
+function accentForeground(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Relative luminance (sRGB)
+  const L = 0.299 * r + 0.587 * g + 0.114 * b;
+  return L > 130 ? "#000" : "#fff";
+}
+
 function applyAccentColor() {
   const color = savedAccent || getDefaultAccent();
   document.documentElement.style.setProperty("--accent", color);
+
+  const fg = accentForeground(color);
+  document.documentElement.style.setProperty("--accent-fg", fg);
+  document.documentElement.style.setProperty(
+    "--accent-fg-dim",
+    fg === "#000" ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.3)",
+  );
+
   if (accentColorInput) accentColorInput.value = color;
   // Update the heart icon fill in the credits
   if (heartIcon) heartIcon.setAttribute("fill", color);
@@ -143,9 +161,9 @@ accentArrowToggle.checked =
 
 function applyAccentArrow() {
   if (accentArrowToggle.checked) {
-    rootEl.classList.add("accent-arrow");
-  } else {
     rootEl.classList.remove("accent-arrow");
+  } else {
+    rootEl.classList.add("accent-arrow");
   }
 }
 

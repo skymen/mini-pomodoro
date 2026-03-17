@@ -24,6 +24,8 @@
   --toggle-bg-checked: rgba(255, 255, 255, 0.25);
   --done-check-dot: rgba(0, 0, 0, 0.4);
   --accent: #ff2d2d;
+  --accent-fg: #fff;
+  --accent-fg-dim: rgba(255, 255, 255, 0.3);
   --blur: blur(40px) saturate(1.8);
   --radius: 14px;
   --radius-sm: 8px;
@@ -48,6 +50,8 @@ html.light {
   --toggle-bg-checked: rgba(0, 0, 0, 0.25);
   --done-check-dot: rgba(255, 255, 255, 0.5);
   --accent: #ff3b3b;
+  --accent-fg: #fff;
+  --accent-fg-dim: rgba(255, 255, 255, 0.3);
 }
 
 html,
@@ -135,11 +139,11 @@ body {
 #arrow-tab .arrow-icon {
   width: 10px;
   height: 10px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--accent-fg);
   transition: color 0.2s;
 }
 #arrow-tab:hover .arrow-icon {
-  color: #fff;
+  color: var(--accent-fg);
 }
 
 /* ── Mini timer (2X bigger: 40px wide) ──────────────────────── */
@@ -180,12 +184,12 @@ body {
 }
 #mini-ring-bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.3);
+  stroke: var(--accent-fg-dim);
   stroke-width: 2.5;
 }
 #mini-ring-progress {
   fill: none;
-  stroke: #fff;
+  stroke: var(--accent-fg);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
@@ -194,7 +198,7 @@ body {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--accent-fg);
   font-variant-numeric: tabular-nums;
 }
 
@@ -399,7 +403,7 @@ body {
 }
 .toggle:checked::before {
   transform: translateX(10px);
-  background: #fff;
+  background: var(--accent-fg);
 }
 
 /* ── Theme picker ────────────────────────────────────────────── */
@@ -539,7 +543,7 @@ body {
 #btn-play:hover,
 #btn-play.playing {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
 }
 
 /* ── Task section ─────────────────────────────────────────────── */
