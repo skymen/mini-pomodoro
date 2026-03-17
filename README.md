@@ -11,26 +11,26 @@
 <table align="center">
   <tr>
     <td align="center">
-      <br/>
-      <img src="build/badges/apple.svg" height="32" alt="macOS"/>
-      <br/>
       <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0-universal.dmg">
+        <br/>
+        <img src="build/badges/apple.svg" height="32" alt="macOS"/>
+        <br/>
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=macOS%20download&font=montserrat" width="200" alt="Download for macOS"/>
       </a>
     </td>
     <td align="center">
-      <br/>
-      <img src="build/badges/windows.svg" height="32" alt="Windows"/>
-      <br/>
       <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro.Setup.1.1.0.exe">
+        <br/>
+        <img src="build/badges/windows.svg" height="32" alt="Windows"/>
+        <br/>
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=Windows%20download&font=montserrat" width="200" alt="Download for Windows"/>
       </a>
     </td>
     <td align="center">
-      <br/>
-      <img src="build/badges/linux.svg" height="32" alt="Linux"/>
-      <br/>
       <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0.x86_64.AppImage">
+        <br/>
+        <img src="build/badges/linux.svg" height="32" alt="Linux"/>
+        <br/>
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=Linux%20download&font=montserrat" width="200" alt="Download for Linux"/>
       </a>
     </td>
