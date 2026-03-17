@@ -61,31 +61,28 @@ Mini Pomodoro is a translucent desktop widget that docks to the edge of your scr
 
 Pick any accent color — choose from presets or use the color picker for any shade you like. Toggle the accent-themed arrow and mini timer to make the collapsed indicator match.
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="assets/dark red.png" width="200"/><br/><sub>Dark — Red</sub></td>
-    <td align="center"><img src="assets/light pink.png" width="200"/><br/><sub>Light — Pink</sub></td>
-    <td align="center"><img src="assets/dark yellow.png" width="200"/><br/><sub>Dark — Yellow</sub></td>
-    <td align="center"><img src="assets/light blue.png" width="200"/><br/><sub>Light — Blue</sub></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/dark red.png" width="180"/>
+  <img src="assets/light pink.png" width="180"/>
+  <img src="assets/dark yellow.png" width="180"/>
+  <img src="assets/light blue.png" width="180"/>
+</p>
 
 When the app is tucked away, the arrow and mini timer take on your accent color too:
 
-<table align="center">
-  <tr>
-    <td align="center"><picture><img src="assets/arrow red.png" height="36"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow pink.png" height="36"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow yellow inverted.png" height="36"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow blue inverted.png" height="36"/></picture></td>
-  </tr>
-  <tr>
-    <td align="center"><picture><img src="assets/timer red inverted.png" height="58"/></picture></td>
-    <td align="center"><picture><img src="assets/timer pink.png" height="58"/></picture></td>
-    <td align="center"><picture><img src="assets/timer yellow.png" height="58"/></picture></td>
-    <td align="center"><picture><img src="assets/timer blue inverted.png" height="58"/></picture></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/arrow red.png" height="36"/>
+  <img src="assets/arrow pink.png" height="36"/>
+  <img src="assets/arrow yellow inverted.png" height="36"/>
+  <img src="assets/arrow blue inverted.png" height="36"/>
+</p>
+
+<p align="center">
+  <img src="assets/timer red inverted.png" height="58"/>
+  <img src="assets/timer pink.png" height="58"/>
+  <img src="assets/timer yellow.png" height="58"/>
+  <img src="assets/timer blue inverted.png" height="58"/>
+</p>
 
 ---
 
@@ -101,8 +98,8 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 | ----------------------- | ----------------------------------------------------------------------------------------------- |
 | **Theme**               | Switch between **Light**, **Dark**, or **Auto** (follows your OS).                              |
 | **Accent color**        | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color. |
-| **Accent-themed arrow** | Colors the tucked-state arrow with your accent color instead of the default white.              |
-| **Accent-themed clock** | Colors the mini timer ring with your accent color instead of the default white.                 |
+| **Accent-themed arrow** | Inverts the colors on the arrow so that the arrow is the one using the accent color.            |
+| **Accent-themed clock** | Inverts the colors on the mini-timer so that the mini-timer is the one using the accent color.  |
 
 ### Timer
 
