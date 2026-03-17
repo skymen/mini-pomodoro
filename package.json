@@ -27,7 +27,6 @@
       "dist/**/*",
       "main.js",
       "preload.js",
-      "assets/**/*",
       "package.json"
     ],
     "mac": {
