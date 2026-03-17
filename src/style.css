@@ -95,7 +95,16 @@ body {
   align-items: flex-start;
   justify-content: center;
   position: relative;
-  padding-top: 52px;
+  padding-top: 32px;
+  margin: 20px 0;
+}
+#root.dock-left #arrow-strip {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+#root:not(.dock-left) #arrow-strip {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
 }
 
 /* Narrow interaction strip for "smaller" interaction-area mode */
@@ -103,16 +112,16 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 3px;
   z-index: 1;
   background: transparent;
   border-radius: 1px;
 }
 #root.dock-left #arrow-strip-edge {
-  left: -1px;
+  left: 0px;
 }
 #root:not(.dock-left) #arrow-strip-edge {
-  right: -1px;
+  right: 0px;
 }
 
 #arrow-tab {
@@ -158,7 +167,7 @@ body {
 /* ── Mini timer (2X bigger: 40px wide) ──────────────────────── */
 #mini-timer {
   position: absolute;
-  top: 72px;
+  top: 50px;
   transform: translateY(-50%);
   width: 40px;
   display: flex;
