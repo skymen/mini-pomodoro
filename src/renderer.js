@@ -244,6 +244,24 @@ document.addEventListener("mouseup", () => {
   window.electronAPI.dragEnd({ x: window.screenX, y: window.screenY });
 });
 
+// ── Pin (prevent auto-tuck) ────────────────────────────────────
+let pinned = localStorage.getItem("pomo-pinned") === "true";
+const pinBtn = document.getElementById("pin-btn");
+
+function applyPinState() {
+  pinBtn.classList.toggle("active", pinned);
+  pinBtn.title = pinned ? "Unpin window" : "Pin window";
+}
+
+pinBtn.addEventListener("click", () => {
+  pinned = !pinned;
+  localStorage.setItem("pomo-pinned", pinned);
+  applyPinState();
+  window.electronAPI.setPinned(pinned);
+});
+
+applyPinState();
+
 // ── Mouse enter / leave ────────────────────────────────────────
 
 // Behaviour settings
@@ -278,7 +296,7 @@ function sendMouseEnter() {
 }
 
 function sendMouseLeave() {
-  if (!dragging && !colorPickerOpen) window.electronAPI.mouseLeave();
+  if (!dragging && !colorPickerOpen && !pinned) window.electronAPI.mouseLeave();
 }
 
 // ── Enter logic ────────────────────────────────────────────────
@@ -495,6 +513,12 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   interactionArea = "smaller";
   localStorage.removeItem("pomo-interaction-area");
   applyAreaButtons();
+
+  // Pin state
+  pinned = false;
+  localStorage.removeItem("pomo-pinned");
+  applyPinState();
+  window.electronAPI.setPinned(false);
 
   // Timer durations
   focusDurationInput.value = DEFAULT_FOCUS_MINS;
@@ -1177,15 +1201,15 @@ function onPhaseEnd() {
       saveTasks();
       renderTasks();
     }
-    isBreak = true;
-    totalSeconds = (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
-  } else {
-    // Break phase ended
+    // Last session — skip the break and go straight to congrats
     if (session % SESSIONS === 0) {
-      // Long break just ended — all sessions complete
       showCongrats();
       return;
     }
+    isBreak = true;
+    totalSeconds = SHORT_BREAK * 60;
+  } else {
+    // Break phase ended
     isBreak = false;
     session++;
     totalSeconds = FOCUS_MINS * 60;

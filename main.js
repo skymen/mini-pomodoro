@@ -17,10 +17,13 @@ const WIN_WIDTH = 290;
 const MIN_HEIGHT = 160;
 const MAX_HEIGHT = 560;
 const TUCK_DELAY = 800;
+const TUCK_DURATION = 250;
+const EDGE_SNAP_DURATION = 300;
 
 let tuckTimer = null;
 let currentHeight = MIN_HEIGHT;
 let currentWidth = WIN_WIDTH;
+let isPinned = false;
 
 function createWindow() {
   const wa = screen.getPrimaryDisplay().workArea;
@@ -108,8 +111,18 @@ function createWindow() {
 
     win.show();
 
+    // Read pinned state from localStorage before auto-tucking
+    try {
+      const pinnedVal = await win.webContents.executeJavaScript(
+        `localStorage.getItem("pomo-pinned")`,
+      );
+      isPinned = pinnedVal === "true";
+    } catch {
+      isPinned = false;
+    }
+
     // Auto-dock shortly after startup so the window appears briefly then tucks
-    setTimeout(() => tuck(), 600);
+    if (!isPinned) ipcMain.emit("mouse-leave");
   });
 
   nativeTheme.on("updated", () => {
@@ -126,8 +139,7 @@ function createWindow() {
       const [winX, y] = win.getPosition();
       // Save the untucked X position so we can restore to the correct display
       const wa = getWorkArea();
-      const x =
-        dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
+      const x = dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
       const state = JSON.stringify({ dockedSide, x, y });
       win.webContents
         .executeJavaScript(
@@ -211,7 +223,7 @@ function snapToEdge() {
   lerpAnimate(
     { x: curX, y: curY, w: currentWidth },
     { x: targetX, y: targetY, w: WIN_WIDTH },
-    300,
+    EDGE_SNAP_DURATION,
     () => {
       tucked = false;
     },
@@ -238,7 +250,7 @@ function tuck() {
   lerpAnimate(
     { x: curX, y: curY, w: currentWidth },
     { x: targetX, y: curY, w: ARROW_TAB },
-    250,
+    TUCK_DURATION,
     () => {
       tucked = true;
       tucking = false;
@@ -265,7 +277,7 @@ function untuck() {
   lerpAnimate(
     { x: curX, y: curY, w: currentWidth },
     { x: targetX, y: curY, w: WIN_WIDTH },
-    250,
+    TUCK_DURATION,
     () => {
       tucked = false;
       tucking = false;
@@ -292,10 +304,23 @@ ipcMain.on("mouse-enter", () => {
 });
 
 ipcMain.on("mouse-leave", () => {
+  if (isPinned) return;
   if (tuckTimer) clearTimeout(tuckTimer);
   tuckTimer = setTimeout(() => {
     tuck();
   }, TUCK_DELAY);
+});
+
+ipcMain.on("set-pinned", (_, pinned) => {
+  isPinned = pinned;
+  // If just pinned while tucked, untuck immediately
+  if (isPinned && tucked) {
+    if (tuckTimer) {
+      clearTimeout(tuckTimer);
+      tuckTimer = null;
+    }
+    untuck();
+  }
 });
 
 ipcMain.on("drag-end", (_, { x, y }) => {
