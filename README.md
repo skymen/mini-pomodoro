@@ -73,16 +73,16 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 
 <table align="center">
   <tr>
-    <td align="center"><picture><img src="assets/arrow red.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow pink.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow yellow inverted.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/arrow blue inverted.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow red.png" height="36"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow pink.png" height="36"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow yellow inverted.png" height="36"/></picture></td>
+    <td align="center"><picture><img src="assets/arrow blue inverted.png" height="36"/></picture></td>
   </tr>
   <tr>
-    <td align="center"><picture><img src="assets/timer red inverted.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/timer pink.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/timer yellow.png" height="80"/></picture></td>
-    <td align="center"><picture><img src="assets/timer blue inverted.png" height="80"/></picture></td>
+    <td align="center"><picture><img src="assets/timer red inverted.png" height="58"/></picture></td>
+    <td align="center"><picture><img src="assets/timer pink.png" height="58"/></picture></td>
+    <td align="center"><picture><img src="assets/timer yellow.png" height="58"/></picture></td>
+    <td align="center"><picture><img src="assets/timer blue inverted.png" height="58"/></picture></td>
   </tr>
 </table>
 
