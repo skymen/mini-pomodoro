@@ -15,7 +15,7 @@
         <br/>
         <img src="build/badges/apple.svg" height="32" alt="macOS"/>
         <br/>
-        <img src="https://placehold.co/230x30/171414/ff2d2d?text=macOS%20download&font=montserrat" width="200" alt="Download for macOS"/>
+        <img src="https://placehold.co/230x40/171414/ff2d2d?text=macOS%20download&font=montserrat" width="200" alt="Download for macOS"/>
       </a>
     </td>
     <td align="center">
@@ -23,7 +23,7 @@
         <br/>
         <img src="build/badges/windows.svg" height="32" alt="Windows"/>
         <br/>
-        <img src="https://placehold.co/230x30/171414/ff2d2d?text=Windows%20download&font=montserrat" width="200" alt="Download for Windows"/>
+        <img src="https://placehold.co/230x40/171414/ff2d2d?text=Windows%20download&font=montserrat" width="200" alt="Download for Windows"/>
       </a>
     </td>
     <td align="center">
@@ -31,7 +31,7 @@
         <br/>
         <img src="build/badges/linux.svg" height="32" alt="Linux"/>
         <br/>
-        <img src="https://placehold.co/230x30/171414/ff2d2d?text=Linux%20download&font=montserrat" width="200" alt="Download for Linux"/>
+        <img src="https://placehold.co/230x40/171414/ff2d2d?text=Linux%20download&font=montserrat" width="200" alt="Download for Linux"/>
       </a>
     </td>
   </tr>
