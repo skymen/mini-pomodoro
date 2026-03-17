@@ -8,10 +8,6 @@
   A minimal, always-on-top Pomodoro timer that sits quietly on the edge of your screen.
 </p>
 
-<p align="center">
-  <img src="assets/dark red.png" width="280" alt="Mini Pomodoro — dark red theme"/>
-</p>
-
 <table align="center">
   <tr>
     <td align="center">
@@ -40,6 +36,10 @@
     </td>
   </tr>
 </table>
+
+<p align="center">
+  <img src="assets/dark red.png" width="280" alt="Mini Pomodoro — dark red theme"/>
+</p>
 
 ---
 
@@ -94,29 +94,29 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 
 ### Appearance
 
-| Setting | Description |
-|---|---|
-| **Theme** | Switch between **Light**, **Dark**, or **Auto** (follows your OS). |
-| **Accent color** | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color. |
+| Setting                         | Description                                                                                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Theme**                       | Switch between **Light**, **Dark**, or **Auto** (follows your OS).                                           |
+| **Accent color**                | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color.              |
 | **Accent-themed arrow & clock** | When enabled, the tucked-state arrow and mini timer ring use your accent color instead of the default white. |
 
 ### Timer
 
-| Setting | Description |
-|---|---|
-| **Focus** | Duration of each focus session (1–120 min, default 25). |
-| **Short break** | Break between sessions (1–60 min, default 5). |
-| **Long break** | Break after completing all sessions (1–60 min, default 15). |
-| **Sessions** | Number of focus sessions before a long break (1–12, default 4). |
+| Setting         | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| **Focus**       | Duration of each focus session (1–120 min, default 25).         |
+| **Short break** | Break between sessions (1–60 min, default 5).                   |
+| **Long break**  | Break after completing all sessions (1–60 min, default 15).     |
+| **Sessions**    | Number of focus sessions before a long break (1–12, default 4). |
 
 ### Behaviour
 
-| Setting | Description |
-|---|---|
-| **Show timer when collapsed** | Display a mini countdown ring on the screen edge while the timer is running and the app is tucked. |
-| **Auto-hide after timer alert** | Automatically tuck the app back after it pops out to notify you a phase ended. |
-| **Undock on** | Choose **Hover** (expand on mouse-over) or **Click** (expand only when clicked). |
-| **Interaction area** | Controls how much of the tucked strip responds to your mouse: **Full** (entire strip), **Smaller** (arrow + timer + edge), or **Arrow** (arrow and timer only). |
+| Setting                         | Description                                                                                                                                                     |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Show timer when collapsed**   | Display a mini countdown ring on the screen edge while the timer is running and the app is tucked.                                                              |
+| **Auto-hide after timer alert** | Automatically tuck the app back after it pops out to notify you a phase ended.                                                                                  |
+| **Undock on**                   | Choose **Hover** (expand on mouse-over) or **Click** (expand only when clicked).                                                                                |
+| **Interaction area**            | Controls how much of the tucked strip responds to your mouse: **Full** (entire strip), **Smaller** (arrow + timer + edge), or **Arrow** (arrow and timer only). |
 
 #### Docking
 
@@ -130,9 +130,7 @@ The app docks to whichever screen edge you drag it to and tucks itself away auto
 
 The interaction area setting lets you control exactly how much of the collapsed strip reacts to your cursor:
 
-<p align="center">
-  <video src="assets/show interaction.mp4" width="280" autoplay loop muted playsinline></video>
-</p>
+[video]("assets/show interaction.mp4")
 
 ---
 
