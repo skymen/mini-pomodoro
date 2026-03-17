@@ -611,14 +611,20 @@ body {
 }
 
 #task-list::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
 }
 #task-list::-webkit-scrollbar-thumb {
-  background: var(--text-faint);
-  border-radius: 3px;
+  background: var(--accent);
+  border-radius: 4px;
 }
 #task-list::-webkit-scrollbar-track {
   background: transparent;
+}
+#task-list:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#task-list:hover::-webkit-scrollbar-thumb {
+  background: var(--accent);
 }
 
 .task-item {
@@ -700,9 +706,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  cursor: pointer !important;
   transition:
     border-color 0.15s,
     background 0.15s;
+}
+/* Invisible expanded hit area around the checkbox */
+.task-check::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
 }
 .task-item:not(.done):hover .task-check {
   border-color: var(--accent);
@@ -806,6 +820,7 @@ body {
   font-size: 13px;
   padding: 0 2px;
   opacity: 0;
+  cursor: pointer !important;
   transition:
     opacity 0.12s,
     color 0.12s;
@@ -881,14 +896,20 @@ body {
   max-height: 150px;
 }
 #done-list::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
 }
 #done-list::-webkit-scrollbar-thumb {
-  background: var(--text-faint);
-  border-radius: 3px;
+  background: var(--accent);
+  border-radius: 4px;
 }
 #done-list::-webkit-scrollbar-track {
   background: transparent;
+}
+#done-list:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#done-list:hover::-webkit-scrollbar-thumb {
+  background: var(--accent);
 }
 
 /* ── Settings panel (overlay) ─────────────────────────────────── */
