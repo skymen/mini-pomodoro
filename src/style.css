@@ -972,6 +972,22 @@ body {
   flex: 1;
   overflow-y: auto;
 }
+#settings-panel::-webkit-scrollbar {
+  width: 4px;
+}
+#settings-panel::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+#settings-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+#settings-panel:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#settings-panel:hover::-webkit-scrollbar-thumb {
+  background: var(--accent);
+}
 #settings-panel.open {
   display: flex;
 }

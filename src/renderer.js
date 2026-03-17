@@ -976,7 +976,7 @@ function flashTimerRing() {
     { once: true },
   );
 
-  // Spawn three staggered ripple rings
+  // Spawn staggered ripple rings
   [0, 200, 400, 1000, 1200, 1400, 2200, 2400, 2600].forEach((delay) => {
     setTimeout(() => {
       const ring = document.createElement("div");
