@@ -11,7 +11,7 @@
 <table align="center">
   <tr>
     <td align="center">
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0-universal.dmg">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.2.0-universal.dmg">
         <br/>
         <img src="build/badges/apple.svg" height="32" alt="macOS"/>
         <br/>
@@ -19,7 +19,7 @@
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro.Setup.1.1.0.exe">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro.Setup.1.2.0.exe">
         <br/>
         <img src="build/badges/windows.svg" height="32" alt="Windows"/>
         <br/>
@@ -27,7 +27,7 @@
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0.x86_64.AppImage">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.2.0.x86_64.AppImage">
         <br/>
         <img src="build/badges/linux.svg" height="32" alt="Linux"/>
         <br/>
@@ -105,7 +105,7 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 
 | Setting         | Description                                                     |
 | --------------- | --------------------------------------------------------------- |
-| **Focus**       | Duration of each focus session (1–120 min, default 25).         |
+| **Focus**       | Duration of each focus session (1.2.0 min, default 25).         |
 | **Short break** | Break between sessions (1–60 min, default 5).                   |
 | **Long break**  | Break after completing all sessions (1–60 min, default 15).     |
 | **Sessions**    | Number of focus sessions before a long break (1–12, default 4). |
