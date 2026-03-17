@@ -14,7 +14,7 @@
       <br/>
       <img src="build/badges/apple.svg" height="32" alt="macOS"/>
       <br/>
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.0.1-universal.dmg">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0-universal.dmg">
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=macOS%20download&font=montserrat" width="200" alt="Download for macOS"/>
       </a>
     </td>
@@ -22,7 +22,7 @@
       <br/>
       <img src="build/badges/windows.svg" height="32" alt="Windows"/>
       <br/>
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro.Setup.1.0.1.exe">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro.Setup.1.1.0.exe">
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=Windows%20download&font=montserrat" width="200" alt="Download for Windows"/>
       </a>
     </td>
@@ -30,7 +30,7 @@
       <br/>
       <img src="build/badges/linux.svg" height="32" alt="Linux"/>
       <br/>
-      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.0.1.x86_64.AppImage">
+      <a href="https://github.com/skymen/mini-pomodoro/releases/latest/download/Mini.Pomodoro-1.1.0.x86_64.AppImage">
         <img src="https://placehold.co/230x30/171414/ff2d2d?text=Linux%20download&font=montserrat" width="200" alt="Download for Linux"/>
       </a>
     </td>
