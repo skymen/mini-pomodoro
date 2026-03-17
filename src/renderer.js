@@ -330,6 +330,24 @@ function sendMouseLeave() {
   if (!dragging && !colorPickerOpen && !pinned) window.electronAPI.mouseLeave();
 }
 
+// ── Click-mode hover helpers ───────────────────────────────────
+// When undock mode is "click" and the window is tucked with
+// click-through enabled, hovering over the interaction area must
+// temporarily re-enable mouse events so clicks can actually reach
+// the app.  Leaving the area restores click-through.
+
+function enableMouseForClick() {
+  if (undockMode === "click" && isTucked && interactionArea !== "full") {
+    window.electronAPI.setIgnoreMouse(false);
+  }
+}
+
+function restoreClickThrough() {
+  if (undockMode === "click" && isTucked && interactionArea !== "full") {
+    window.electronAPI.setIgnoreMouse(true);
+  }
+}
+
 // ── Enter logic ────────────────────────────────────────────────
 
 rootEl.addEventListener("mouseenter", (e) => {
@@ -344,23 +362,31 @@ rootEl.addEventListener("mouseenter", (e) => {
 // Sub-element enter listeners for when rootEl mouseenter target
 // is the strip itself but we need to detect entering a child
 arrowTab.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked) sendMouseEnter();
+  if (isTucked) {
+    if (undockMode === "hover") sendMouseEnter();
+    else enableMouseForClick();
+  }
 });
 
 miniTimerEl.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked) sendMouseEnter();
+  if (isTucked) {
+    if (undockMode === "hover") sendMouseEnter();
+    else enableMouseForClick();
+  }
 });
 
 arrowStrip.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked && interactionArea === "full") {
-    sendMouseEnter();
+  if (isTucked && interactionArea === "full") {
+    if (undockMode === "hover") sendMouseEnter();
+    else enableMouseForClick();
   }
 });
 
 const arrowStripEdge = document.getElementById("arrow-strip-edge");
 arrowStripEdge.addEventListener("mouseenter", () => {
-  if (undockMode === "hover" && isTucked && interactionArea === "smaller") {
-    sendMouseEnter();
+  if (isTucked && interactionArea === "smaller") {
+    if (undockMode === "hover") sendMouseEnter();
+    else enableMouseForClick();
   }
 });
 
@@ -388,6 +414,7 @@ rootEl.addEventListener("mouseleave", () => {
 arrowStrip.addEventListener("mouseleave", () => {
   if (isTucked && interactionArea === "full") {
     sendMouseLeave();
+    restoreClickThrough();
   }
 });
 
@@ -397,6 +424,7 @@ arrowTab.addEventListener("mouseleave", (e) => {
   const to = e.relatedTarget;
   if (to && elIsInInteractionArea(to)) return;
   sendMouseLeave();
+  restoreClickThrough();
 });
 
 miniTimerEl.addEventListener("mouseleave", (e) => {
@@ -404,6 +432,7 @@ miniTimerEl.addEventListener("mouseleave", (e) => {
   const to = e.relatedTarget;
   if (to && elIsInInteractionArea(to)) return;
   sendMouseLeave();
+  restoreClickThrough();
 });
 
 arrowStripEdge.addEventListener("mouseleave", (e) => {
@@ -411,6 +440,7 @@ arrowStripEdge.addEventListener("mouseleave", (e) => {
   const to = e.relatedTarget;
   if (to && elIsInInteractionArea(to)) return;
   sendMouseLeave();
+  restoreClickThrough();
 });
 
 // ── Undock-mode setting ────────────────────────────────────────
