@@ -180,7 +180,7 @@ applyAccentArrow();
 // ── Accent-themed clock toggle ─────────────────────────────────
 const accentClockToggle = document.getElementById("accent-clock-toggle");
 accentClockToggle.checked =
-  localStorage.getItem("pomo-accent-clock") === "true";
+  localStorage.getItem("pomo-accent-clock") !== "true";
 
 function applyAccentClock() {
   if (accentClockToggle.checked) {
@@ -532,6 +532,11 @@ document.getElementById("reset-all-settings").addEventListener("click", () => {
   accentArrowToggle.checked = false;
   localStorage.removeItem("pomo-accent-arrow");
   applyAccentArrow();
+
+  // Accent-themed clock
+  accentClockToggle.checked = true;
+  localStorage.removeItem("pomo-accent-clock");
+  applyAccentClock();
 
   // Keep timer when collapsed
   keepTimerToggle.checked = true;

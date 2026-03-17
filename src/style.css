@@ -342,7 +342,7 @@ body {
   border: none;
 }
 
-/* ── Accent-themed arrow & clock ─────────────────────────────── */
+/* ── Accent-themed arrow ─────────────────────────────────────── */
 #root.accent-arrow #arrow-tab .arrow-icon {
   color: var(--accent);
 }
@@ -358,28 +358,30 @@ body {
 #root.accent-arrow.dock-left #arrow-tab {
   border-left: none;
 }
-#root.accent-arrow #mini-timer {
+
+/* ── Accent-themed clock ─────────────────────────────────────── */
+#root.accent-clock #mini-timer {
   background: var(--glass);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--glass-border);
 }
-#root.accent-arrow:not(.dock-left) #mini-timer {
+#root.accent-clock:not(.dock-left) #mini-timer {
   border-right: none;
 }
-#root.accent-arrow.dock-left #mini-timer {
+#root.accent-clock.dock-left #mini-timer {
   border-left: none;
 }
-#root.accent-arrow #mini-ring-bg {
+#root.accent-clock #mini-ring-bg {
   stroke: var(--text-faint);
 }
-#root.accent-arrow #mini-ring-progress {
+#root.accent-clock #mini-ring-progress {
   stroke: var(--accent);
 }
-#root.accent-arrow #mini-timer-text {
+#root.accent-clock #mini-timer-text {
   color: var(--text);
 }
-#root.accent-arrow #sm-ring-progress {
+#root.accent-clock #sm-ring-progress {
   stroke: var(--accent);
 }
 
