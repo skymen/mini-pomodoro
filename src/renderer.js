@@ -90,6 +90,7 @@ function applyAccentColor() {
 
 function updateSwatchStates() {
   const currentColor = (savedAccent ?? getDefaultAccent()).toLowerCase();
+  const customSwatch = document.querySelector(".custom-swatch");
   colorSwatches.forEach((btn) => {
     if (btn.classList.contains("custom-swatch")) {
       // Custom swatch is active when the current color doesn't match any preset
@@ -100,6 +101,8 @@ function updateSwatchStates() {
           s.dataset.color.toLowerCase() === currentColor,
       );
       btn.classList.toggle("active", !isPreset && savedAccent !== null);
+      // Always update the custom swatch background to reflect the current accent
+      btn.style.background = currentColor;
     } else {
       btn.style.background = btn.dataset.color;
       btn.classList.toggle(

@@ -8,7 +8,7 @@
 
 /* ── Theme variables ──────────────────────────────────────────── */
 :root {
-  --glass: rgba(12, 12, 14, 0.9);
+  --glass: rgba(12, 12, 14, 1.0);
   --glass-strong: rgba(12, 12, 14, 0.82);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-hover: rgba(255, 255, 255, 0.06);
@@ -34,7 +34,7 @@
 }
 
 html.light {
-  --glass: rgba(255, 255, 255, 0.9);
+  --glass: rgba(255, 255, 255, 1.0);
   --glass-strong: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-hover: rgba(0, 0, 0, 0.04);
@@ -116,6 +116,7 @@ body {
   justify-content: center;
   z-index: 0;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.25s ease;
   cursor: pointer;
   background: var(--accent);
@@ -123,6 +124,7 @@ body {
 }
 #arrow-tab.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 #root:not(.dock-left) #arrow-tab {
@@ -166,6 +168,7 @@ body {
 }
 #mini-timer.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 #root:not(.dock-left) #mini-timer {
@@ -290,20 +293,17 @@ body {
 
 /* Custom swatch wraps the native color input */
 .custom-swatch {
-  background: conic-gradient(
-    red, yellow, lime, aqua, blue, magenta, red
-  );
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  color: #fff;
+  color: var(--accent-fg);
 }
 .custom-swatch svg {
   position: relative;
   z-index: 1;
   pointer-events: none;
-  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
 }
 .custom-swatch input[type="color"] {
   position: absolute;
