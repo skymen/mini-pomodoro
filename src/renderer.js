@@ -458,6 +458,48 @@ settingsBtn.addEventListener("click", () => {
   requestResize();
 });
 
+// ── Reset all settings ─────────────────────────────────────────
+document.getElementById("reset-all-settings").addEventListener("click", () => {
+  // Theme
+  themePref = "auto";
+  localStorage.removeItem("pomo-theme");
+  applyTheme();
+
+  // Accent color
+  savedAccent = null;
+  localStorage.removeItem("pomo-accent-color");
+  applyAccentColor();
+
+  // Accent-themed arrow
+  accentArrowToggle.checked = false;
+  localStorage.removeItem("pomo-accent-arrow");
+  applyAccentArrow();
+
+  // Keep timer when collapsed
+  keepTimerToggle.checked = false;
+  localStorage.removeItem("pomo-keep-timer");
+  updateMiniTimerVisibility();
+
+  // Undock mode
+  undockMode = "hover";
+  localStorage.removeItem("pomo-undock-mode");
+  applyUndockButtons();
+
+  // Interaction area
+  interactionArea = "full";
+  localStorage.removeItem("pomo-interaction-area");
+  applyAreaButtons();
+
+  // Timer durations
+  focusDurationInput.value = DEFAULT_FOCUS_MINS;
+  shortBreakDurationInput.value = DEFAULT_SHORT_BREAK;
+  longBreakDurationInput.value = DEFAULT_LONG_BREAK;
+  sessionsCountInput.value = DEFAULT_SESSIONS;
+  applyTimerSettings();
+
+  requestResize();
+});
+
 // Open external links in default browser
 document.querySelectorAll('a[target="_blank"]').forEach((a) => {
   a.addEventListener("click", (e) => {
@@ -867,10 +909,19 @@ function initSortable() {
 renderTasks();
 
 // ── Pomodoro Timer ─────────────────────────────────────────────
-const FOCUS_MINS = 25;
-const SHORT_BREAK = 5;
-const LONG_BREAK = 15;
-const SESSIONS = 4;
+const DEFAULT_FOCUS_MINS = 25;
+const DEFAULT_SHORT_BREAK = 5;
+const DEFAULT_LONG_BREAK = 15;
+const DEFAULT_SESSIONS = 4;
+
+let FOCUS_MINS =
+  parseInt(localStorage.getItem("pomo-focus-mins")) || DEFAULT_FOCUS_MINS;
+let SHORT_BREAK =
+  parseInt(localStorage.getItem("pomo-short-break")) || DEFAULT_SHORT_BREAK;
+let LONG_BREAK =
+  parseInt(localStorage.getItem("pomo-long-break")) || DEFAULT_LONG_BREAK;
+let SESSIONS =
+  parseInt(localStorage.getItem("pomo-sessions")) || DEFAULT_SESSIONS;
 
 let session = 1;
 let isBreak = false;
@@ -920,6 +971,97 @@ keepTimerToggle.addEventListener("change", () => {
   localStorage.setItem("pomo-keep-timer", keepTimerToggle.checked);
   updateMiniTimerVisibility();
 });
+
+// ── Timer duration settings ───────────────────────────────────
+const focusDurationInput = document.getElementById("focus-duration");
+const shortBreakDurationInput = document.getElementById(
+  "short-break-duration",
+);
+const longBreakDurationInput = document.getElementById("long-break-duration");
+const sessionsCountInput = document.getElementById("sessions-count");
+
+focusDurationInput.value = FOCUS_MINS;
+shortBreakDurationInput.value = SHORT_BREAK;
+longBreakDurationInput.value = LONG_BREAK;
+sessionsCountInput.value = SESSIONS;
+
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
+
+function applyTimerSettings() {
+  const wasRunning = running;
+
+  FOCUS_MINS = clamp(parseInt(focusDurationInput.value) || DEFAULT_FOCUS_MINS, 1, 120);
+  SHORT_BREAK = clamp(parseInt(shortBreakDurationInput.value) || DEFAULT_SHORT_BREAK, 1, 60);
+  LONG_BREAK = clamp(parseInt(longBreakDurationInput.value) || DEFAULT_LONG_BREAK, 1, 60);
+  SESSIONS = clamp(parseInt(sessionsCountInput.value) || DEFAULT_SESSIONS, 1, 12);
+
+  // Update inputs to clamped values
+  focusDurationInput.value = FOCUS_MINS;
+  shortBreakDurationInput.value = SHORT_BREAK;
+  longBreakDurationInput.value = LONG_BREAK;
+  sessionsCountInput.value = SESSIONS;
+
+  localStorage.setItem("pomo-focus-mins", FOCUS_MINS);
+  localStorage.setItem("pomo-short-break", SHORT_BREAK);
+  localStorage.setItem("pomo-long-break", LONG_BREAK);
+  localStorage.setItem("pomo-sessions", SESSIONS);
+
+  // Reset the current phase to reflect the new duration
+  if (wasRunning) pauseTimer();
+  if (!isBreak) {
+    totalSeconds = FOCUS_MINS * 60;
+  } else {
+    totalSeconds = (session % SESSIONS === 0 ? LONG_BREAK : SHORT_BREAK) * 60;
+  }
+  remaining = totalSeconds;
+  updateTimerUI();
+  updateTimerResetVisibility();
+}
+focusDurationInput.addEventListener("change", applyTimerSettings);
+shortBreakDurationInput.addEventListener("change", applyTimerSettings);
+longBreakDurationInput.addEventListener("change", applyTimerSettings);
+sessionsCountInput.addEventListener("change", applyTimerSettings);
+
+// ── Individual timer reset buttons ────────────────────────────
+function updateTimerResetVisibility() {
+  document.getElementById("reset-focus").classList.toggle(
+    "visible",
+    FOCUS_MINS !== DEFAULT_FOCUS_MINS,
+  );
+  document.getElementById("reset-short-break").classList.toggle(
+    "visible",
+    SHORT_BREAK !== DEFAULT_SHORT_BREAK,
+  );
+  document.getElementById("reset-long-break").classList.toggle(
+    "visible",
+    LONG_BREAK !== DEFAULT_LONG_BREAK,
+  );
+  document.getElementById("reset-sessions").classList.toggle(
+    "visible",
+    SESSIONS !== DEFAULT_SESSIONS,
+  );
+}
+
+document.getElementById("reset-focus").addEventListener("click", () => {
+  focusDurationInput.value = DEFAULT_FOCUS_MINS;
+  applyTimerSettings();
+});
+document.getElementById("reset-short-break").addEventListener("click", () => {
+  shortBreakDurationInput.value = DEFAULT_SHORT_BREAK;
+  applyTimerSettings();
+});
+document.getElementById("reset-long-break").addEventListener("click", () => {
+  longBreakDurationInput.value = DEFAULT_LONG_BREAK;
+  applyTimerSettings();
+});
+document.getElementById("reset-sessions").addEventListener("click", () => {
+  sessionsCountInput.value = DEFAULT_SESSIONS;
+  applyTimerSettings();
+});
+
+updateTimerResetVisibility();
 
 function fmt(s) {
   const m = Math.floor(s / 60);

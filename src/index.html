@@ -129,6 +129,58 @@
           </div>
 
           <div class="settings-group">
+            <div class="settings-group-label">Timer</div>
+            <div class="settings-row">
+              <label for="focus-duration">Focus</label>
+              <div class="number-input-group">
+                <input type="number" id="focus-duration" class="settings-number" min="1" max="120" value="25" />
+                <span class="number-unit">min</span>
+                <button class="reset-btn" id="reset-focus" title="Reset to default">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <label for="short-break-duration">Short break</label>
+              <div class="number-input-group">
+                <input type="number" id="short-break-duration" class="settings-number" min="1" max="60" value="5" />
+                <span class="number-unit">min</span>
+                <button class="reset-btn" id="reset-short-break" title="Reset to default">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <label for="long-break-duration">Long break</label>
+              <div class="number-input-group">
+                <input type="number" id="long-break-duration" class="settings-number" min="1" max="60" value="15" />
+                <span class="number-unit">min</span>
+                <button class="reset-btn" id="reset-long-break" title="Reset to default">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <label for="sessions-count">Sessions</label>
+              <div class="number-input-group">
+                <input type="number" id="sessions-count" class="settings-number" min="1" max="12" value="4" />
+                <span class="number-unit">&times;</span>
+                <button class="reset-btn" id="reset-sessions" title="Reset to default">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group">
             <div class="settings-group-label">Behaviour</div>
             <div class="settings-row">
               <label for="keep-timer-toggle">Show timer when collapsed</label>
@@ -154,6 +206,8 @@
               </div>
             </div>
           </div>
+
+          <button id="reset-all-settings" class="reset-all-btn">Reset all settings</button>
 
           <div class="credits">
             made with

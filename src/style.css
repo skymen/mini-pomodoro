@@ -958,6 +958,81 @@ body {
   align-items: center;
   gap: 6px;
 }
+.number-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.settings-number {
+  width: 42px;
+  padding: 2px 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 10px;
+  font-family: var(--font);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.settings-number::-webkit-inner-spin-button,
+.settings-number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.settings-number:focus {
+  border-color: var(--accent);
+}
+.number-unit {
+  font-size: 9px;
+  color: var(--text-dim);
+  min-width: 16px;
+}
+.reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, color 0.15s;
+}
+.reset-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.reset-btn:hover {
+  color: var(--accent);
+}
+.reset-all-btn {
+  display: block;
+  width: 100%;
+  padding: 5px 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 9px;
+  font-family: var(--font);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.reset-all-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 #settings-panel .credits {
   margin-top: auto;
   text-align: center;
