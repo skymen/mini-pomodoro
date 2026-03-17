@@ -20,11 +20,13 @@ const TUCK_DELAY = 800;
 
 let tuckTimer = null;
 let currentHeight = MIN_HEIGHT;
+let currentWidth = WIN_WIDTH;
 
 function createWindow() {
   const wa = screen.getPrimaryDisplay().workArea;
 
   currentHeight = MIN_HEIGHT;
+  currentWidth = WIN_WIDTH;
 
   win = new BrowserWindow({
     width: WIN_WIDTH,
@@ -121,7 +123,11 @@ function createWindow() {
   // Save position to renderer localStorage before the window is destroyed
   win.on("close", () => {
     if (win) {
-      const [x, y] = win.getPosition();
+      const [winX, y] = win.getPosition();
+      // Save the untucked X position so we can restore to the correct display
+      const wa = getWorkArea();
+      const x =
+        dockedSide === "right" ? wa.x + wa.width - WIN_WIDTH : wa.x;
       const state = JSON.stringify({ dockedSide, x, y });
       win.webContents
         .executeJavaScript(
@@ -150,7 +156,7 @@ function getWorkAreaForPoint(x, y) {
   return screen.getDisplayNearestPoint({ x, y }).workArea;
 }
 
-function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
+function lerpAnimate(from, to, duration, done) {
   const fps = 60;
   const steps = Math.max(1, Math.round((duration / 1000) * fps));
   let step = 0;
@@ -159,17 +165,22 @@ function lerpAnimate(fromX, fromY, toX, toY, duration, done) {
     step++;
     const t = step / steps;
     const ease = 1 - Math.pow(1 - t, 4);
-    const x = Math.round(fromX + (toX - fromX) * ease);
-    const y = Math.round(fromY + (toY - fromY) * ease);
-    if (win) win.setBounds({ x, y, width: WIN_WIDTH, height: currentHeight });
+    const x = Math.round(from.x + (to.x - from.x) * ease);
+    const y = Math.round(from.y + (to.y - from.y) * ease);
+    const w = Math.round(from.w + (to.w - from.w) * ease);
+    if (win) {
+      currentWidth = w;
+      win.setBounds({ x, y, width: w, height: currentHeight });
+    }
 
     if (step >= steps) {
       clearInterval(interval);
+      currentWidth = to.w;
       if (win)
         win.setBounds({
-          x: toX,
-          y: toY,
-          width: WIN_WIDTH,
+          x: to.x,
+          y: to.y,
+          width: to.w,
           height: currentHeight,
         });
       if (done) done();
@@ -197,9 +208,14 @@ function snapToEdge() {
 
   notifyDockedSide();
 
-  lerpAnimate(curX, curY, targetX, targetY, 300, () => {
-    tucked = false;
-  });
+  lerpAnimate(
+    { x: curX, y: curY, w: currentWidth },
+    { x: targetX, y: targetY, w: WIN_WIDTH },
+    300,
+    () => {
+      tucked = false;
+    },
+  );
 }
 
 function tuck() {
@@ -208,18 +224,26 @@ function tuck() {
   const wa = getWorkArea();
   const [curX, curY] = win.getPosition();
 
+  // Shrink the window to ARROW_TAB wide, pinned to the screen edge.
+  // For right-dock: X moves to right edge minus ARROW_TAB.
+  // For left-dock: X stays at the left edge (wa.x).
   let targetX;
   if (dockedSide === "right") {
     targetX = wa.x + wa.width - ARROW_TAB;
   } else {
-    targetX = wa.x - WIN_WIDTH + ARROW_TAB;
+    targetX = wa.x;
   }
 
   notifyTuckState(true);
-  lerpAnimate(curX, curY, targetX, curY, 250, () => {
-    tucked = true;
-    tucking = false;
-  });
+  lerpAnimate(
+    { x: curX, y: curY, w: currentWidth },
+    { x: targetX, y: curY, w: ARROW_TAB },
+    250,
+    () => {
+      tucked = true;
+      tucking = false;
+    },
+  );
 }
 
 function untuck() {
@@ -228,6 +252,7 @@ function untuck() {
   const wa = getWorkArea();
   const [curX, curY] = win.getPosition();
 
+  // Expand back to full width, pinned to the screen edge.
   let targetX;
   if (dockedSide === "right") {
     targetX = wa.x + wa.width - WIN_WIDTH;
@@ -237,10 +262,15 @@ function untuck() {
 
   // Notify immediately so the arrow fades out during the slide
   notifyTuckState(false);
-  lerpAnimate(curX, curY, targetX, curY, 250, () => {
-    tucked = false;
-    tucking = false;
-  });
+  lerpAnimate(
+    { x: curX, y: curY, w: currentWidth },
+    { x: targetX, y: curY, w: WIN_WIDTH },
+    250,
+    () => {
+      tucked = false;
+      tucking = false;
+    },
+  );
 }
 
 function notifyDockedSide() {
@@ -276,6 +306,7 @@ ipcMain.on("drag-end", (_, { x, y }) => {
 
   // Move the window to the dropped display first so getWorkArea() picks it up
   if (win) {
+    currentWidth = WIN_WIDTH;
     win.setBounds({ x, y, width: WIN_WIDTH, height: currentHeight });
   }
   snapToEdge();
@@ -302,7 +333,7 @@ ipcMain.on("resize-height", (_, requestedHeight) => {
 
   const [x, y] = win.getPosition();
   currentHeight = h;
-  win.setBounds({ x, y, width: WIN_WIDTH, height: h });
+  win.setBounds({ x, y, width: currentWidth, height: h });
 });
 
 ipcMain.handle("get-docked-side", () => dockedSide);
