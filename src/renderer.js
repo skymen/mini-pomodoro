@@ -1267,10 +1267,28 @@ updateTimerUI();
 // ── Scroll-triggered scrollbar visibility ───────────────────────
 [taskListEl, doneListEl, settingsPanel].forEach((el) => {
   let scrollTimer;
+  let isHovering = false;
+
+  const hideScrollbar = () => {
+    if (!isHovering) {
+      el.classList.remove("scrolling");
+    }
+  };
+
   el.addEventListener("scroll", () => {
     el.classList.add("scrolling");
     clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => el.classList.remove("scrolling"), 800);
+    scrollTimer = setTimeout(hideScrollbar, 800);
+  });
+
+  el.addEventListener("mouseenter", () => {
+    isHovering = true;
+  });
+
+  el.addEventListener("mouseleave", () => {
+    isHovering = false;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(hideScrollbar, 800);
   });
 });
 

@@ -662,6 +662,9 @@ body {
   scrollbar-color: transparent transparent;
   scrollbar-width: thin;
   transition: scrollbar-color 0.3s;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-right: 6px;
 }
 #task-list.scrolling {
   scrollbar-color: var(--accent) transparent;
@@ -932,6 +935,7 @@ body {
   flex-direction: column;
   gap: 2px;
   padding-top: 2px;
+  padding-bottom: 1px;
   overflow-y: auto;
   max-height: 150px;
   scrollbar-color: transparent transparent;
@@ -946,7 +950,7 @@ body {
 #settings-panel {
   display: none;
   flex-direction: column;
-  padding: 12px;
+  padding: 10px 12px;
   gap: 14px;
   flex: 1;
   overflow-y: auto;
