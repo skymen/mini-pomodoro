@@ -96,12 +96,12 @@ When the app is tucked away, the arrow and mini timer take on your accent color 
 
 ### Appearance
 
-| Setting                         | Description                                                                                                  |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Theme**                       | Switch between **Light**, **Dark**, or **Auto** (follows your OS).                                           |
-| **Accent color**                | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color.              |
-| **Accent-themed arrow** | Colors the tucked-state arrow with your accent color instead of the default white. |
-| **Accent-themed clock** | Colors the mini timer ring with your accent color instead of the default white. |
+| Setting                 | Description                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| **Theme**               | Switch between **Light**, **Dark**, or **Auto** (follows your OS).                              |
+| **Accent color**        | Choose from 7 presets (red, orange, amber, green, blue, purple, pink) or pick any custom color. |
+| **Accent-themed arrow** | Colors the tucked-state arrow with your accent color instead of the default white.              |
+| **Accent-themed clock** | Colors the mini timer ring with your accent color instead of the default white.                 |
 
 ### Timer
 
